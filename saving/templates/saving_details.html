@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+Saving details : {{ member.name }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Saving Details for ({{member.member_id}}) - {{ member.name }}</h3>
+
+    <div class="car">
+        <p>id : {{ member.member_id }}</p>
+        <p>name : {{ member.name }}</p>
+        <p>address : {{ member.address }}</p>
+        <p>dob : {{ member.date_of_birth }}</p>
+        <p>occupation : {{ member.occupation }}</p>
+        <p>citizenship no. : {{ member.citizenship_number }}</p>
+    </div>
+    <table class="table table-bordered mt-3 text-center">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Previous Balance</th>
+                <th>Saving</th>
+                <th>Refund</th>
+                <th>Interest</th>
+                <th>Balance</th>
+                <th>Method</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in transactions %}
+                <tr>
+                    <td>{{ tx.date }}</td>
+                    <td>Rs {{ tx.previous_balance }}</td>
+                    <td>
+                        {% if tx.type == "Deposit" %}
+                            Rs {{ tx.amount }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if tx.type == "Refund" %}
+                            Rs {{ tx.amount }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if tx.type == "Interest" %}
+                            Rs {{ tx.amount }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>Rs {{ tx.balance }}</td>
+                    <td>{{ tx.payment_method }}</td>
+                    <td>{{tx.remarks}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
