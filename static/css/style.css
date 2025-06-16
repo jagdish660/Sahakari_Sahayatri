@@ -109,7 +109,7 @@
     font-weight: 500;
     color: white;
     margin:2px;
-    background-color:#0b5e37;
+    background-color:#10643d;
 }
 
 .search-btn{
@@ -321,11 +321,11 @@ font-size: 14px;
     margin-left: 10px;
 }
 
-.btn{
+/* .btn{
     width: 7vw;
     border-radius: 5%;
     margin: 10px;
-}
+} */
 
 .explore{
     width: 100%;
@@ -1024,7 +1024,7 @@ body {
         width: 100%;
     }
 
-    .btn, .back .btn, .button-container .btn, .button-popup .btn {
+    .back .btn, .button-container .btn, .button-popup .btn {
         width: 80%;
         height: auto;
         font-size: 0.9rem;
@@ -1167,7 +1167,7 @@ body {
         font-size: 0.9rem;
     }
 
-    .btn, .button-container .btn {
+    .button-container .btn {
         font-size: 0.8rem;
         padding: 8px;
     }

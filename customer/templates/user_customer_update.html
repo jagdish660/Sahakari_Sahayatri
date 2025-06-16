@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Edit details : {{form.first_name}} {{form.middle_name}} {{form.last_name}}
+{% endblock title %}
+
+{% block content %}
+<h2>Edit Your details</h2>
+<div class="form-div">
+    <form method="post" action="{% url 'customer_update' id %}" class="form-member">
+        {% csrf_token %}
+        <div class="mb-2">
+            <label for="member_id">Member ID:</label>
+            <input type="text" id="member_id" name="member_id" value="{{id}}" class="form-control" disabled>
+        </div>
+        <div class="mb-2">
+            <label for="first_name">Name: <span class="required-form" >*</span></label>
+            <input type="text" id="first_name" name="first_name" disabled value="{{form.first_name}} {{form.middle_name}} {{form.last_name}}" class="form-control" required>
+        </div>
+        <div class="mb-2">
+            <label for="date_of_birth">Date of Birth: <span class="required-form" >*</span></label>
+            <input type="date" id="date_of_birth" disabled name="date_of_birth" value="{{ form.date_of_birth|date:'Y-m-d' }}" class="form-control" required>
+        </div>
+        <div class="mb-2">
+            <label for="address">Address: <span class="required-form" >*</span></label>
+            <input type="text" id="address" name="address" value="{{form.address}}" class="form-control" required>
+        </div>
+        <div class="mb-2">
+            <label for="phone_number">Phone Number: <span class="required-form" >*</span></label>
+            <input type="text" id="phone_number" name="phone_number" value="{{form.phone_number}}" class="form-control" required>
+        </div>  
+        <div class="mb-2">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{form.email}}" class="form-control">
+        </div>
+        <div class="mb-2">
+            <label for="occupation">Occupation:</label>
+            <input type="text" id="occupation" name="occupation" value="{{form.occupation}}" class="form-control">
+        </div>  
+        <div class="mb-3 button-container">
+            <button type="submit" class="btn btn-md btn-primary" value="submit">Update Member</button>
+        </div>
+    </form>
+</div>
+
+
+
+{% endblock content %}

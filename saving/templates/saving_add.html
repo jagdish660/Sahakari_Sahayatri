@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Manage Saving: {{ member.first_name }} {{ member.middle_name }} {{ member.last_name }}
+{% endblock title %}
+
+{% block content %}
+<h2>Manage Saving for Member ({{ member.member_id }})</h2>
+
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<div class="form-div">
+    <form method="post" action="" class="form-member">
+        {% csrf_token %}
+        
+        <!-- Member ID (read-only) -->
+        <div class="mb-2">
+            <label>Member ID:</label>
+            <input type="text" class="form-control" value="{{ member.member_id }}" disabled>
+        </div>
+
+        <!-- Name (read-only) -->
+        <div class="mb-2">
+            <label>Name:</label>
+            <input type="text" class="form-control" value="{% if member.middle_name %}{{ member.first_name }} {{ member.middle_name }} {{ member.last_name }}{% else %}{{ member.first_name }} {{ member.last_name }}{% endif %}" disabled>
+        </div>
+
+        <!-- Saving Amount -->
+        <div class="mb-2">
+            <label for="id_saving">Saving Amount:</label>
+            {{ form.saving }}
+        </div>
+        <div class="mb-2">
+            <label for="id_other_fee">Oter Fee:</label>
+            {{ form.other_fee }}
+        </div>
+
+        <!-- Loan Repayment Toggle -->
+        <div class="mb-2">
+            <input type="checkbox" id="repayment-toggle"> <label for="repayment-toggle">Loan Repayment?</label>
+        </div>
+
+        <!-- Collapsible Repayment Section -->
+        <div class="collapsible-content" style="display: none;">
+            {% if loan %}
+            <div class="mb-2">
+                <p><strong>Loan Details:</strong></p>
+                <p>Principal Remaining: {{ loan.remaining_principal }}</p>
+                <p>Interest to be Paid: {{ loan.interest_to_pay }}</p>
+                <input type="hidden" name="loan_id" value="{{ loan.id }}">
+            </div>
+            
+
+            <div class="mb-2">
+                <label for="id_interest_paid">Interest Paid:</label>
+                {{ form.interest_paid }}
+            </div>
+
+            <div class="mb-2">
+                <label for="id_principal_paid">Principal Paid:</label>
+                {{ form.principal_paid }}
+            </div>
+            {% else %}
+            <p>There is no any loan for this member.</p>
+            {% endif %}
+        </div>
+
+        <!-- Total Auto-calculated -->
+        <div class="mb-2">
+            <label>Total Amount:</label>
+            <input type="text" id="amount" class="form-control" disabled>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="mb-2">
+            <label for="id_payment_method">Payment Method:</label>
+            {{ form.payment_method }}
+        </div>
+
+
+        <!-- Remarks -->
+        <div class="mb-2">
+            <label for="id_remarks">Remarks:</label>
+            {{ form.remarks }}
+        </div>
+
+        <!-- Submit -->
+        <div class="mb-3 button-container">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+</div>
+
+<!-- JS for toggle & auto-total -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const repaymentToggle = document.getElementById("repayment-toggle");
+        const collapsible = document.querySelector(".collapsible-content");
+
+        const saving = document.getElementById("id_saving");
+        const interest = document.getElementById("id_interest_paid");
+        const principal = document.getElementById("id_principal_paid");
+        const other_fee = document.getElementById("id_other_fee");
+        const amount = document.getElementById("amount");
+
+        function calculateAmount() {
+            const savingVal = parseFloat(saving?.value) || 0;
+            const interestVal = parseFloat(interest?.value) || 0;
+            const principalVal = parseFloat(principal?.value) || 0;
+            const otherFeeVal = parseFloat(other_fee?.value) || 0;
+            amount.value = (savingVal + interestVal + principalVal + otherFeeVal).toFixed(3);
+        }
+
+        if (repaymentToggle) {
+            repaymentToggle.addEventListener("change", function () {
+                collapsible.style.display = this.checked ? "block" : "none";
+            });
+        }
+
+        [saving, interest, principal, other_fee].forEach(field => {
+            if (field) field.addEventListener("input", calculateAmount);
+        });
+    });
+</script>
+{% endblock content %}

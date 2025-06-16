@@ -38,3 +38,33 @@ class Member(models.Model):
     class Meta:
         ordering = ['member_id']  # Ascending order
         # ordering = ['-member_id']  # For descending order
+
+
+class Transaction(models.Model):
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='transactions')
+    date = models.DateField(auto_now_add=True)
+    amount = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    saving_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    loan_repayment = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    interest_paid = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    other_fee = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    payment_method = models.CharField(max_length=50, choices=[
+        ('cash', 'Cash'),
+        ('cheque', 'Cheque'),
+    ], default='cash')
+    remarks = models.TextField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):    # Automatically compute values based on latest transaction
+        latest = Transaction.objects.filter(member=self.member).order_by('-date').first()
+        if latest and latest.pk != self.pk:    # Assuming saving_balance carries forward and changes with loan/interest
+            self.saving_balance = latest.saving_balance + self.amount - self.loan_repayment - self.interest_paid
+        elif not latest:    # First transaction: base it directly
+            self.saving_balance = self.amount - self.loan_repayment - self.interest_paid
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.member.name} | Rs. {self.amount} on {self.date}"
+
+    class Meta:
+        ordering = ['-date']
+

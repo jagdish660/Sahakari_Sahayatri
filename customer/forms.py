@@ -32,3 +32,14 @@ class UpdateMemberForm(forms.ModelForm):
             'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'occupation': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+class UserUpdateMemberForm(forms.ModelForm):
+    class Meta:
+        model = Member
+        fields = ['email', 'phone_number', 'address', 'occupation']
+        widgets = {
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'occupation': forms.TextInput(attrs={'class': 'form-control'}),
+        }

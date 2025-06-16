@@ -12,9 +12,9 @@ Transaction
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
             <h4>Total Saving</h4>
-            <p class="fs-3 fw-bold">$5,250</p>
-            <p>Total savings from previous year: $5,000</p>
-            <p>Total savings of current year: $250</p>
+            <p class="fs-3 fw-bold">Rs. {{total_savings}}</p>
+            <p>Total savings from previous year: Rs. {{current_year_savings}}</p>
+            <p>Total savings of current year: Rs. {{previous_year_savings}}</p>
             <a href="{% url 'saving_home' %}">
                 <button class="btn btn-outline-success">Manage</button>
             </a>
@@ -23,9 +23,9 @@ Transaction
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
             <h4>Total Loan</h4>
-            <p class="fs-3 fw-bold">$3,540</p>
-            <p>Total loan deployed from previous year: $2,800</p>
-            <p>Total loan deployed of current year: $740</p>
+            <p class="fs-3 fw-bold">Rs. {{total_deployed}}</p>
+            <p>Total loan deployed from previous year: Rs. {{deployed_previous_year}}</p>
+            <p>Total loan deployed of current year: Rs. {{deployed_current_year}}</p>
             <a href="{% url 'loan_home' %}">
                 <button class="btn btn-outline-success">Manage</button>
             </a>
@@ -37,9 +37,9 @@ Transaction
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
             <h4>Total Share</h4>
-            <p class="fs-3 fw-bold">$5,000</p>
-            <p>Total savings from previous year: $5,000</p>
-            <p>Total savings of current year: $0</p>
+            <p class="fs-3 fw-bold">Rs. {{total_shares}}</p>
+            <p>Total shares from previous year: Rs. {{current_year_shares}}</p>
+            <p>Total shares of current year: Rs. {{previous_year_shares}}</p>
             <a href="{% url 'share_home' %}">
                 <button class="btn btn-outline-success">Manage</button>
             </a>
@@ -52,10 +52,21 @@ Transaction
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
             <h4>Total members</h4>
-            <p class="fs-3 fw-bold">112 members</p>
+            <p class="fs-3 fw-bold">{{total_members}}</p>
             <a href="{% url 'customer_home' %}">
                 <button class="btn btn-outline-success">Manage</button>
             </a>
+        </div>
+    </div>
+</div>
+
+<h2 class="p-3">Balance</h2>
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total amount on bank</h4>
+            <p class="fs-3 fw-bold">Rs. {{balance_now}}</p>
+            
         </div>
     </div>
 </div>

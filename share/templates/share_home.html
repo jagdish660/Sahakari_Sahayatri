@@ -2,21 +2,25 @@
 {% load static %}
 
 {% block title %}
-Aptitude Test: {{ college.name }}
+Share Home
 {% endblock title %}
 
 {% block content %}
 
-<h2>Saving home</h2>
-<div class="container saving-card text-center ">
-    
-    <div class=" p-2 m-3">
+<h2>Share home</h2>  
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
             <h4>Total Share</h4>
-            <p class="text-center fs-3 fw-bold">$5,000</p>
-            <p class="text-center">Total savings from previous year: $5,000</p>
-            <p class="text-center">Total savings of current year: $0</p>
+            <p class="fs-3 fw-bold">Rs. {{total_shares}}</p>
+            <p>Total shares from previous year: Rs. {{current_year_shares}}</p>
+            <p>Total shares of current year: Rs. {{previous_year_shares}}</p>
+            <a href="{% url 'share_home' %}">
+                <button class="btn btn-outline-success">Manage</button>
+            </a>
         </div>
-</div>    
+    </div>
+</div>  
 
 <div class="card m-3">
     <h3>List of share holders</h3>
@@ -29,17 +33,24 @@ Aptitude Test: {{ college.name }}
             <th>Action</th>
         </tr>
         
+        {% for sh in share %}
         <tr class="align-middle text-center">
-            <td>1</td>
-            <td><a href="#" class="text-decoration-none text-black fw-bold">John Doe</a></td>
-            <td>123 Maple St.</td>
-            <td>$2,500</td>
+            <td>{{ forloop.counter }}.</td>
+            {% if sh.customer.middle_name %}
+            <td><a href="#" class="links text-decoration-none text-black fw-bold">{{ sh.customer.first_name }} {{sh.customer.middle_name}} {{sh.customer.last_name }}</a></td>
+            {% else %}
+            <td><a href="#" class="links text-decoration-none text-black fw-bold">{{ sh.customer.first_name }} {{sh.customer.last_name}}</a></td>
+            {% endif %}
+            <td>{{ sh.customer.address }}</td>
+            <td>Rs. {{ sh.balance }}</td>
             <td>
+                <a href="{% url 'share_details' sh.customer.member_id %}" class="btn btn-sm btn-outline-primary m-1">View</a>
+
                 <button class="btn btn-sm btn-outline-success m-1">Edit</button>
-                <button class="btn btn-sm btn-outline-primary m-1">View</button>
                 <button class="btn btn-sm btn-outline-danger m-1">Delete</button>
             </td>
         </tr>
+        {% endfor %}
     </table>
 
     <!-- Pagination -->

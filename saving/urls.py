@@ -7,4 +7,5 @@ urlpatterns = [
     path('saving/', saving.saving_home, name='saving_home'),
     path('saving/<int:member_id>/', saving.saving_details, name='saving_details'),
     path('', saving.transactions, name='transactions'),
+    path('saving/add/<int:member_id>/', saving.saving_add, name='saving_add'),
 ]

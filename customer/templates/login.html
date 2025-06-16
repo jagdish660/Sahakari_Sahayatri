@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Login
+{% endblock title %}
+
+{% block content %}
+<h2>Login</h2>
+<div class="form-div">
+    <form method="post" action="{% url 'loginpage'  %}" class="form-member">
+        {% csrf_token %}
+        <div class="mb-2">
+            <label for="member_id">Member ID:</label>
+            <input type="text" id="member_id" name="member_id" value="{{id}}" class="form-control">
+        </div>
+        <div class="mb-2">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" class="form-control" required>
+        </div>
+        <div class="mb-2">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password"class="form-control" required>
+        </div>
+
+        <div class="mb-3 button-container">
+            <button type="submit" class="btn btn-md btn-primary" value="submit">Login</button>
+        </div>
+    </form>
+</div>
+
+
+
+{% endblock content %}

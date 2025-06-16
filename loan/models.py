@@ -1,15 +1,23 @@
 from django.db import models
 from django.utils import timezone
 from customer.models import Member
+from core.utils import gregorian_to_nepali_approx
 from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
+from dateutil.relativedelta import relativedelta
 
 class Loan(models.Model):
     customer = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='loans')
     amount = models.DecimalField(max_digits=15, decimal_places=2, help_text="Original loan principal")
-    interest_rate = models.DecimalField(max_digits=5, decimal_places=4, help_text="Annual interest rate (e.g. 0.075 for 7.5%)")
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, help_text="Annual interest rate (e.g. 0.075 for 7.5%)")
     start_date = models.DateField(default=timezone.now)
     remaining_principal = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=[
+        ('active', 'Active'),
+        ('closed', 'Closed'),
+    ], default='active', help_text="Current status of the loan")
+    remarks = models.TextField(blank=True, null=True)
+    
     last_renewed = models.DateField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -22,8 +30,14 @@ class Loan(models.Model):
         return f"Loan #{self.pk} for {self.customer} | Remaining Principal: {self.remaining_principal}"
 
     def monthly_interest(self):
-        """Returns monthly interest based on current remaining principal"""
-        return (self.remaining_principal * (self.interest_rate / Decimal('12'))).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        """Returns monthly interest based on current remaining principal."""
+        # Convert percentage (e.g., 10) to decimal (e.g., 0.10)
+        monthly_rate = (self.interest_rate / Decimal('100.0')) / Decimal('12.0')
+        return (self.remaining_principal * monthly_rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+    def update_status_based_on_principal(self):
+        self.status = 'closed' if self.remaining_principal == Decimal('0.00') else 'active'
+        self.save()
 
     def is_shrawan_renewal_due(self):
         today = date.today()
@@ -41,6 +55,27 @@ class Loan(models.Model):
             return renewal_fee
         return Decimal('0.00')
 
+    def interest_to_pay(self):
+        """
+        Calculate interest based on full Nepali months between last payment/renewal and today.
+        """
+        last_payment_date = self.repayments.last().repayment_date if self.repayments.exists() else self.last_renewed or self.start_date
+        today = date.today()
+
+        last_np_year, last_np_month = gregorian_to_nepali_approx(last_payment_date)
+        today_np_year, today_np_month = gregorian_to_nepali_approx(today)
+
+        # Calculate Nepali month difference
+        months_passed = (today_np_year - last_np_year) * 12 + (today_np_month - last_np_month)
+
+        if months_passed <= 0:
+            return Decimal('0.00')
+
+        monthly_interest = self.monthly_interest()
+        total_interest = (monthly_interest * months_passed).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+        return total_interest
+
 
 class Repayment(models.Model):
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='repayments')
@@ -48,6 +83,7 @@ class Repayment(models.Model):
     amount_paid = models.DecimalField(max_digits=15, decimal_places=2, help_text="Total amount paid")
     principal_paid = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     interest_paid = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    remarks = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ['repayment_date']
@@ -68,6 +104,13 @@ class Repayment(models.Model):
                 Decimal(self.loan.remaining_principal) - Decimal(self.principal_paid)
             ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
             self.loan.remaining_principal = max(self.loan.remaining_principal, Decimal('0.00'))
+
+            # Update status
+            if self.loan.remaining_principal == Decimal('0.00'):
+                self.loan.status = 'closed'
+            else:
+                self.loan.status = 'active'
+
             self.loan.save()
 
         super().save(*args, **kwargs)
@@ -75,3 +118,4 @@ class Repayment(models.Model):
     def __str__(self):
         return (f"Repayment on {self.repayment_date}: Total Paid={self.amount_paid}, "
                 f"Principal={self.principal_paid}, Interest={self.interest_paid}")
+

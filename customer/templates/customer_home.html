@@ -37,16 +37,23 @@ Member Home
             {% for customer in customers %}
                 <tr class="align-middle text-center">
                     <td>{{ forloop.counter }}.</td>
-                    <td><a href="" class="text-decoration-none text-black fw-bold">{{ customer.member_id }}</a></td>
-                    <td><a href="" class="text-decoration-none text-black fw-bold">{{ customer.name }}</a></td>
+                    <td><a href="" class="links text-decoration-none text-black fw-bold">{{ customer.member_id }}</a></td>
+                    <td><a href="" class="links text-decoration-none text-black fw-bold">{{ customer.name }}</a></td>
                     <td>{{ customer.citizenship_number }}</td>
                     <td>{{ customer.date_of_birth }}</td>
                     <td>{{ customer.address }}</td>
                     <td>{{ customer.occupation }}</td>
-                    <td>
-                        <a href="{% url 'customer_update' customer.member_id %}" class="btn btn-sm btn-outline-success m-1"> Edit</a>
-                        <a href="{% url 'customer_details' customer.member_id %}" class="btn btn-sm btn-outline-success m-1"> View</a>
-                        <button class="btn btn-sm btn-outline-danger m-1">Delete</button>
+                    <td class="d-flex justify-content-center align-items-center">
+                        
+                        <form method="GET" action="{% url 'customer_update' customer.member_id %}">
+                            <button class="btn btn-sm btn-outline-success m-2" type="submit">Edit</button>
+                        </form><form method="GET" action="{% url 'customer_details' customer.member_id %}">
+                            <button class="btn btn-sm btn-outline-primary m-2" type="submit">View</button>
+                        </form>
+                        <form method="POST" action="{% url 'customer_delete' customer.member_id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-danger m-2" type="submit">Delete</button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}

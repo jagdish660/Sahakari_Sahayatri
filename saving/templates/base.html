@@ -103,10 +103,10 @@
                         <p class="navbar-text"><strong>Welcome, {{ request.user.username }}!</strong></p>
                     </dt>
                     <div class="button-popup">
-                        <a href="" class="btn text-decoration-none">Logout</a>
+                        <a href="{% url 'logoutpage' %}" class="btn text-decoration-none">Logout</a>
                     </div>
                     <div class="button-popup">
-                        <a href="" class="btn text-decoration-none">Change Password</a>
+                        <a href="{% url 'change_password' %}" class="btn text-decoration-none">Change Password</a>
                     </div>
                 </div>
             {% endif %}
@@ -241,7 +241,8 @@
     </footer>
 
     </body>
-<style>#settings-popup {
+<style>
+#settings-popup {
     display: none;
     position: absolute;
     top: 70px; /* adjust as needed */
@@ -251,6 +252,18 @@
     z-index: 1000;
     padding: 10px;
     border-radius: 5px;
+}
+.links{
+    text-decoration: none;
+    color: black;
+    padding: 5px;
+}
+.links:hover {
+    text-decoration: underline;
+    color:rgb(51, 49, 49);
+    background-color:rgb(221, 218, 218);
+    padding: 5px;
+    border-radius: 2px;
 }
 </style>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">

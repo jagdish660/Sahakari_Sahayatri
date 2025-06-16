@@ -20,4 +20,11 @@ class ShareRefund(models.Model):
     def __str__(self):
         return f"{self.customer} | Refunded {self.refund_amount} shares on {self.refund_date}"
 
+class ShareBalance(models.Model):
+    customer = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='share_balances')
+    balance = models.IntegerField(default=0, help_text="Current share balance after refunds or purchases")
+    last_updated = models.DateField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.customer} | Current Balance: {self.balance} shares"
 

@@ -39,7 +39,7 @@ class Deposit(models.Model):
     remarks = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.customer.name} | {self.amount} on {self.date}"
+        return f"{self.customer.first_name} | {self.amount} on {self.date} {self.remarks}"
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
@@ -48,18 +48,21 @@ class Deposit(models.Model):
             balance_obj, _ = SavingBalance.objects.get_or_create(customer=self.customer)
             balance_obj.balance = Decimal(balance_obj.balance) + self.amount
             balance_obj.save()
-
+            
     def get_fiscal_year(self):
         return get_fiscal_year_starting_shrawan(self.date)
-
-    # Existing methods...
-    # calculate_interest()
-    # get_balance_until()
-
     class Meta:
         ordering = ['date']
 
 
+class OtherFee(models.Model):
+    customer = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='other_fee')
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    date = models.DateField(default=timezone.now)
+    remarks = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.customer.first_name} | {self.amount} on {self.date}"
 
 
 class YearlyInterest(models.Model):
@@ -70,6 +73,7 @@ class YearlyInterest(models.Model):
     current_interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     current_interest_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     date = models.DateField(default=timezone.now)
+    remarks = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = ('customer', 'year')
