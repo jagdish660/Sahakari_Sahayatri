@@ -25,9 +25,9 @@ Loan History
             <th>Remaining</th>
         </tr>
         {% for loan in loans%}
-            <tr class="text-center">
+            <tr class="text-center align-middle">
                 <td>{{ forloop.counter }}.</td>
-                <td><a href="" class="links text-decoration-none text-black fw-bold">{{ loan.id }}</a></td>
+                <td><a href="" class="links text-decoration-none text-black fw-bold">{{ loan.customer.member_id }}</a></td>
                 {% if loan.customer.middle_name %}
                 <td><a href="" class="links text-decoration-none text-black fw-bold">{{ loan.customer.first_name }} {{loan.customer.middle_name}} {{loan.customer.last_name}}</a></td>
                 {% else %}
@@ -36,10 +36,10 @@ Loan History
                 <td>Rs {{ loan.amount }}</td>
                 <td>Rs {{ loan.remaining_principal }}</td>
                 {% if loan.status == "active" %}
-                    <td><button  class="btn btn-sm btn-success">Active</pb></td>
+                    <td><button  class="btn-sm btn-success">Active</pb></td>
                 {% else %}
                     <td>
-                    <button class="btn btn-sm btn-danger">Closed</button></td>
+                    <button class="btn-sm btn-danger">Closed</button></td>
                 {% endif %}
                 <td>
                     <a href="{% url 'loan_details' loan.id %}" class="btn btn-sm btn-outline-primary m-1">View</a>

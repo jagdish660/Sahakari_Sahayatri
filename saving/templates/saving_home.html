@@ -13,30 +13,43 @@ Savings
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
             <h4>Total Saving</h4>
-            <p class="fs-3 fw-bold">Rs. {{total_saved}}</p>
-            <p>Total saving from previous year: Rs. {{ total_previous_saving }}</p>
-            <p>Total saving of current year: Rs. {{ total_current_saving }}</p>
-            <a href="{% url 'share_home' %}">
-                <button class="btn btn-outline-success">Manage</button>
-            </a>
+            <p class="fs-3 fw-bold">Rs. {{total_saved|floatformat:2}}</p>
+            <p>Total saving from previous year: Rs. {{ total_previous_saving|floatformat:2 }}</p>
+            <p>Total saving of current year: Rs. {{ total_current_saving|floatformat:2 }}</p>
         </div>
     </div>
 </div>
 
-
+<div class="mb-2">
+    <form action="{% url 'saving_interest' %}" method="post">
+        {%csrf_token%}
+        <div>
+            <label for="previous_rate">Previous Rate</label>
+            <input type="number" step="0.1" min="0" max="25" name="previous_rate" id="previous_rate">
+        </div>
+        <div>
+            <label for="current_rate">Current Rate</label>
+            <input type="number" step="0.1" min="0" max="25" name="current_rate" id="current_rate">
+        </div>
+        <div class="button-container">
+            <button type="submit" class="btn btn-md btn-danger">Add</button>
+        </div>    
+    </form>
+</div>
 <div class="card m-3">
     <h3>List of savings</h3>
     <table class="table table-striped table-responsive justify-content-center align-items-center">
         <tr class="align-middle  text-center">
             <th rowspan="2">S.N.</th>
-            <th rowspan="2">ID</th>
+            <th rowspan="2">Member ID</th>
             <th rowspan="2">Name</th>
-            <th colspan="4">Savings</th>
+            <th colspan="5">Savings</th>
             <th rowspan="2">Action</th>
         </tr>
         <tr class="align-middle  text-center ">
             <th>Previous year's</th>
             <th>Current year's</th>
+            <th>Interest</th>
             <th>Refunded</th>
             <th>Total</th>
         </tr>
@@ -46,14 +59,16 @@ Savings
                     <td>{{ forloop.counter0|add:page_obj.start_index }}.</td>
                     <td><a href="" class="links text-decoration-none text-black fw-bold">{{ customer.id }}</a></td>
                     <td><a href="" class="links text-decoration-none text-black fw-bold">{{ customer.name }}</a></td>
-                    <td>Rs {{ customer.previous_saving }}</td>
-                    <td>Rs {{ customer.current_saving }}</td>
-                    <td>Rs {{ customer.total_refunded }}</td>
-                    <td>Rs {{ customer.total_saving }}</td>
+                    <td>Rs {{ customer.previous_saving|floatformat:2 }}</td>
+                    <td>Rs {{ customer.current_saving|floatformat:2 }}</td>
+                    <td>Rs {{ customer.total_interest|floatformat:2 }}</td>
+                    <td>Rs {{ customer.total_refunded|floatformat:2 }}</td>
+                    <td>Rs {{ customer.total_saving|floatformat:2 }}</td>
                     <td>
                         
                         <a class="btn btn-sm btn-outline-primary m-1" href="{% url 'saving_details' customer.id %}">View</a>
                         <a class="btn btn-sm btn-outline-success m-1" href="{% url 'saving_add' customer.id %}">Add</a>
+                        <a class="btn btn-sm btn-outline-success m-1" href="{% url 'saving_interest_yearly' customer.id %}">Interest</a>
                     </td>
                 </tr>
             {% endfor %}

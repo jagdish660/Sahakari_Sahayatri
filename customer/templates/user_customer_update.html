@@ -8,7 +8,7 @@ Edit details : {{form.first_name}} {{form.middle_name}} {{form.last_name}}
 {% block content %}
 <h2>Edit Your details</h2>
 <div class="form-div">
-    <form method="post" action="{% url 'customer_update' id %}" class="form-member">
+    <form method="post" action="{% url 'user_customer_update' id %}" class="form-member">
         {% csrf_token %}
         <div class="mb-2">
             <label for="member_id">Member ID:</label>
@@ -39,11 +39,10 @@ Edit details : {{form.first_name}} {{form.middle_name}} {{form.last_name}}
             <input type="text" id="occupation" name="occupation" value="{{form.occupation}}" class="form-control">
         </div>  
         <div class="mb-3 button-container">
-            <button type="submit" class="btn btn-md btn-primary" value="submit">Update Member</button>
+            <button type="submit" class="btn btn-sm btn-primary" value="submit">Update Member</button>
         </div>
     </form>
 </div>
-
 
 
 {% endblock content %}

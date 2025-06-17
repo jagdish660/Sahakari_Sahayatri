@@ -114,6 +114,10 @@ class YearlyInterest(models.Model):
                 running_balance += tx['amount']
                 post_balance = running_balance - pre_balance
 
+        # Ensure post_balance is not negative
+        if post_balance < 0:
+            post_balance = Decimal('0.00')
+
         pre_rate = Decimal(self.previous_interest_rate) / Decimal('100')
         post_rate = Decimal(self.current_interest_rate) / Decimal('100')
 
@@ -130,17 +134,18 @@ class YearlyInterest(models.Model):
         }
 
     def save(self, *args, **kwargs):
-        is_new = self._state.adding
         interest_values = self.calculate_interest()
+
         self.previous_interest_amount = interest_values['pre_interest']
         self.current_interest_amount = interest_values['post_interest']
+
         super().save(*args, **kwargs)
-        if is_new:
+
+        if self._state.adding:  # Only add interest to saving balance when creating a new record
             total_interest = interest_values['pre_interest'] + interest_values['post_interest']
             balance_obj, _ = SavingBalance.objects.get_or_create(customer=self.customer)
             balance_obj.balance += total_interest
             balance_obj.save()
-
 
 
 class SavingRefund(models.Model):

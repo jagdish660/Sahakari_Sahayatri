@@ -523,10 +523,6 @@ font-size: 14px;
     color: #3f3f3f;
 }
 
-.btn:hover {
-    background-color: #198754;
-    border: 1px solid;
-}
 
 .card-college {
     height: 100%;

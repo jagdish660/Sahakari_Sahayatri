@@ -25,7 +25,7 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'saving_home' %}">Home</a>
+                            <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
                         </li>
                         {% if user.is_authenticated %}
                             {% if user.is_superuser or user.is_staff %}
@@ -186,22 +186,21 @@
                     <div class="footer-link text-center">Links <hr></div>
                     <div class="footer-link-text">
                         <a href="">Home</a><br>
-                        <a href="">Colleges</a><br>
-                        <a href="">Aptitude</a><br>
-                        <a href="">Scholarships</a><br>
-                        <a href="">Placements</a><br>
+                        <a href="">Saving</a><br>
+                        <a href="">Loan</a><br>
+                        <a href="">Share</a><br>
                     </div>
                 </div>
                 <div class="col-12 col-md-3">
                     <div class="footer-link text-center">Contact Us <hr></div>
                     <div class="footer-link-text">
-                        <a class="contact-link" href="mailto:jghimire660@gmail.com">
+                        <a class="contact-link" target="_blank" href="mailto:">
                             <img class="contact-img m-2" src="{% static 'images/emaill.png' %}" alt="mail"> Email
                         </a><br>
-                        <a class="contact-link" href="tel:+9779863476411">
+                        <a class="contact-link" target="_blank" href="tel:">
                             <img class="contact-img m-2" src="{% static 'images/phone.png' %}" alt="call"> Call
                         </a><br>
-                        <a class="contact-link" href="https://maps.app.goo.gl/xDZS6YnoG3gCyVTcA">
+                        <a class="contact-link" target="_blank" href="https://maps.app.goo.gl/bBbN61fWyRSp59sZ8">
                             <img class="contact-img m-2" src="{% static 'images/map.png' %}" alt="MAP"> Location
                         </a><br>
                     </div>
@@ -209,7 +208,7 @@
                 <div class="col-12 col-md-6">
                     <div class="footer-link text-center">About Us <hr></div>
                     <div class="footer-link-text">
-                        <p class="footer-text">The Career Guidance Web App is an educational platform designed to assist students and parents in selecting engineering and management universities in Nepal and abroad.</p>
+                        <p class="footer-text">SahakariSahayatri digitizes co-operative society management, enabling real-time tracking of savings, loans, and shares. Admins manage data efficiently, while users access finances securely from any device. A modern, transparent solution for co-ops.</p>
                     </div>
                 </div>
             </div>
@@ -217,17 +216,14 @@
                 <div class="col-12 text-center justify-content-center align-item-center">
                     <div class="footer-link text-center">Social Media <hr></div>
                     <div class="footer-link-contact d-flex justify-content-center m-3">
-                        <div class="mx-4"><a href="https://www.facebook.com/jagdish.660" target="_blank">
+                        <div class="mx-4"><a href="https://shorturl.at/Z7Oud" target="_blank">
                             <img class="contact-imgg " src="{% static 'images/facebook1.png' %}" alt="facebook">
                         </a></div>
-                        <div class="mx-4"><a href="https://www.instagram.com/jagdish.660/" target="_blank">
+                        <div class="mx-4"><a href="https://www.instagram.com/" target="_blank">
                             <img class="contact-imgg " src="{% static 'images/instagram1.png' %}" alt="instagram">
                         </a></div>
-                        <div class="mx-4"><a href="https://www.linkedin.com/in/jagdish660/" target="_blank">
-                            <img class="contact-imgg" src="{% static 'images/linkedin2.png' %}" alt="instagram">
-                        </a></div>
-                        <div class="mx-4"><a href="https://www.linkedin.com/in/jagdish660/" target="_blank">
-                            <img class="contact-imgg" src="{% static 'images/github.png' %}" alt="instagram">
+                        <div class="mx-4"><a href="https://www.linkedin.com/in/" target="_blank">
+                            <img class="contact-imgg" src="{% static 'images/linkedin2.png' %}" alt="linkedin">
                         </a></div>
                     </div>
                 </div>

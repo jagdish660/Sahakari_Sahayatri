@@ -24,6 +24,10 @@ def member_home(request):
 @login_required(login_url='loginpage')
 def member_details(request, member_id):
     member = get_object_or_404(Member, member_id=member_id)
+    if member.middle_name:
+        name=f"{member.first_name} {member.middle_name} {member.last_name}"
+    else:
+        name=f"{member.first_name} {member.last_name}"
     # Fetch savings data
     deposits = Deposit.objects.filter(customer=member)
     refunds = SavingRefund.objects.filter(customer=member)
@@ -104,6 +108,7 @@ def member_details(request, member_id):
     page_obj = paginator.get_page(page_number)
     return render(request, 'customer_details.html', {
         'member': member,
+        'name': name,
         'transactions': detailed_transactions,
         'loan_transactions': loan_transactions,
         'share_transactions': share_transactions,
@@ -273,8 +278,9 @@ def user_update_customer(request, id):
             return redirect('customer_details')
         except IntegrityError:
             messages.error(request, "A database error occurred. Please try again later.")
-        except Exception:
+        except Exception as e:
             messages.error(request, "There was an error updating the member.")
+            print(e)
     return render(request, 'user_customer_update.html', {'form': member, 'id': id})
 
 

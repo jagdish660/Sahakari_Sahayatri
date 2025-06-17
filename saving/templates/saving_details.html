@@ -31,8 +31,7 @@ Saving details : {{ member.name }}
             </tr>
         </thead>
         <tbody>
-            {% for tx in transactions %}
-                {% if forloop.counter <= 5 %}
+            {% for tx in page_obj %}
                     <tr>
                         <td>{{ tx.date }}</td>
                         <td>Rs {{ tx.previous_balance }}</td>
@@ -61,9 +60,42 @@ Saving details : {{ member.name }}
                         <td>{{ tx.payment_method }}</td>
                         <td>{{tx.remarks}}</td>
                     </tr>
-                {% endif %}
+                
             {% endfor %}
         </tbody>
+        
     </table>
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">1</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&larr;</a>
+                </li>
+            {% endif %}
+
+            <!-- Show the current page number -->
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }}</span>
+            </li>
+
+            <!-- Show next pages -->
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">&rarr;</a>
+                </li>
+            {% endif %}
+
+            <!-- Show the last page number -->
+            {% if page_obj.paginator.num_pages > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
 </div>
 {% endblock %}

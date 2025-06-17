@@ -38,40 +38,36 @@ Loan details : {{ loan.customer.first_name }}
 
     <div class="m-3">
         <h5>Loan</h5>
-        <p>Loan amount : {{loan.amount}}</p>
+        <p class="fw-bold">Loan amount : {{loan.amount}}</p>
+        <p class="fw-bold">Remaining amount : {{loan.remaining_principal}}</p>
         <table class="table table-responsive table-striped table-hover table-bordered mt-3 text-center">
             <thead>
                 <tr>
                     <th>Date</th>
-                    <th>Previous Balance</th>
-                    <th>Deposit</th>
-                    <th>Refund</th>
-                    <th>Balance</th>
-                    <th>Type</th>
+                    <th>Previous Principal</th>
+                    <th>Interest paid</th>
+                    <th>Principle Refunded</th>
+                    <th>Remaining principle</th>
+                    <th>Status</th>
                     <th>Remarks</th>
                 </tr>
             </thead>
             <tbody>
                 {% for tx in page_obj %}
-                    {% if forloop.counter <= 5 %}
                     <tr>
-                        <td>{{ tx.date }}</td>
-                        <td>Rs {{ tx.previous_balance }}</td>
-                        {% if tx.type == "Deposit" or  tx.type == "Interest" %}
-                            <td>Rs {{ tx.amount }}</td>
+                        <td>{{ tx.repayment_date }}</td>    
+                        <td>Rs {{ tx.previous_principal }}</td>
+                        <td>Rs {{ tx.interest_paid }}</td>
+                        <td>Rs {{ tx.principal_paid }}</td>
+                        <td>Rs {{ tx.remaining_principal }}</td>
+                        {% if tx.balance == 0 %}
+                            <td>Closed</td>
                         {% else %}
-                            <td>-</td>
+                            <td>Active</td>
                         {% endif %}
-                        {% if tx.type == "Refund" %}
-                            <td>Rs {{ tx.amount }}</td>
-                        {% else %}
-                            <td>-</td>
-                        {% endif %}
-                        <td>Rs {{ tx.balance }}</td>
-                        <td>{{ tx.type }}</td>
                         <td>{{ tx.remarks }}</td>
                     </tr>
-                    {% endif %}
+                    
                 {% endfor %}
             </tbody>
         </table>
@@ -109,38 +105,6 @@ Loan details : {{ loan.customer.first_name }}
         </nav>
     </div>
     
-    <div class="m-3">
-        <h5>Loan</h5>
-        {% if loan_transactions %}
-            <table class="table table-responsive table-striped table-hover table-bordered mt-3 text-center">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Principal Amount</th>
-                        <th>Interest Rate (%)</th>
-                        <th>Remaining Amount</th>
-                        <th>Remarks</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for loan in loan_transactions %}
-                        {% if loan.status == "active" %}
-                            <tr>
-                                <td>{{ loan.date }}</td>
-                                <td>Rs {{ loan.amount }}</td>
-                                <td>{{ loan.interest_rate }}</td>
-                                <td>Rs {{ loan.remaining_principal }}</td>
-                                <td>{{ loan.remarks }}</td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>No loan transactions available.</p>
-        {% endif %}
-    </div>
-
 
 </div>
 

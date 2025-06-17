@@ -6,11 +6,12 @@ from datetime import date
 from share.models import ShareCapital
 from customer.models import Member, Transaction
 from loan.models import Loan, Repayment
-from saving.models import Deposit, YearlyInterest, SavingRefund, OtherFee
+from saving.models import Deposit, YearlyInterest, SavingRefund, SavingBalance, OtherFee, get_fiscal_year_starting_shrawan, get_fiscal_year_start_end
 from saving.forms import SavingAddForm
 from django.core.paginator import Paginator
 from django.db.models import Sum
 from decimal import Decimal, ROUND_HALF_UP
+
 
 # Create your views here.
 def get_fiscal_year_start():
@@ -19,6 +20,12 @@ def get_fiscal_year_start():
         return date(today.year, 7, 16)
     else:
         return date(today.year - 1, 7, 16)
+
+
+# /
+@login_required(login_url='loginpage')
+def home(request):
+    return render(request, 'home.html')
 
 
 # /saving/
@@ -34,20 +41,29 @@ def saving_home(request):
     for member in members:
         deposits = Deposit.objects.filter(customer=member)
         refunds = SavingRefund.objects.filter(customer=member)
+        interest = YearlyInterest.objects.filter(customer=member)
         previous_saving = deposits.filter(date__lt=fiscal_year_start).aggregate(total=Sum('amount'))['total'] or 0
         current_saving = deposits.filter(date__gte=fiscal_year_start).aggregate(total=Sum('amount'))['total'] or 0
         total_refunded = refunds.aggregate(total=Sum('amount_refunded'))['total'] or 0
-        total_saving = previous_saving + current_saving - total_refunded
+        total_previous_interest = interest.aggregate(total=Sum('previous_interest_amount'))['total'] or 0
+        total_current_interest = interest.aggregate(total=Sum('current_interest_amount'))['total'] or 0
+        total_interest = total_current_interest + total_previous_interest
+        total_saving = previous_saving + current_saving - total_refunded + total_previous_interest + total_current_interest
         total_previous_saving += previous_saving  # Accumulate here
         total_current_saving += current_saving  # Accumulate here
         total_saved += total_saving  # Accumulate here
+        if member.middle_name:
+            name=f"{member.first_name} {member.middle_name} {member.last_name}"
+        else:
+            name=f"{member.first_name} {member.last_name}"
         customer_data.append({
             'id': member.member_id,
-            'name': member.first_name,
+            'name': name,
             'previous_saving': previous_saving,
             'current_saving': current_saving,
             'total_refunded': total_refunded,
-            'total_saving': total_saving
+            'total_saving': total_saving,
+        'total_interest': total_interest,
         })
     paginator = Paginator(customer_data,20)
     page_number = request.GET.get('page')
@@ -66,6 +82,7 @@ def saving_home(request):
 def transactions(request):
     loans = Loan.objects.select_related('customer').all().order_by('-id')
     savings = Deposit.objects.select_related('customer').all().order_by('-date')
+    interest = YearlyInterest.objects.select_related('customer').all().order_by('-date')
     share_balances = ShareCapital.objects.select_related('customer').all().order_by('-id')
     members = Member.objects.all()
     # Calculate totals of Loans
@@ -76,7 +93,7 @@ def transactions(request):
     )
     deployed_previous_year = total_deployed - deployed_current_year
     # Calculate totals of Savings
-    total_savings = sum(deposit.amount for deposit in savings)
+    total_savings = sum(deposit.amount for deposit in savings) + sum(i.previous_interest_amount+i.current_interest_amount for i in interest)
     current_year_savings = sum(
         deposit.amount for deposit in savings if deposit.date.year == current_year
     )
@@ -168,9 +185,14 @@ def saving_details(request, member_id):
             'payment_method': METHOD_DISPLAY.get(tx['payment_method'], tx['payment_method']),
             'remarks': tx['remarks'],
         })
+    print(total_interest)
+    paginator = Paginator(detailed_transactions,25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     return render(request, 'saving_details.html', {
         'member': member,
-        'transactions': detailed_transactions
+        'page_obj': page_obj,
+        'transactions': detailed_transactions,
     })
 
 
@@ -196,6 +218,90 @@ def saving_yearly_interest(request, member_id):
         'member': member,
         'interest_data': interest_data
     })
+
+
+# /saving/interest/ 
+def saving_interest(request):
+    if request.method == 'POST':
+        try:
+            previous_rate = Decimal(request.POST.get('previous_rate'))
+            current_rate = Decimal(request.POST.get('current_rate'))
+
+            current_date = date.today()
+            fiscal_year = get_fiscal_year_starting_shrawan(current_date)  # e.g., 2025
+            fiscal_year_start_date, fiscal_year_end_date = get_fiscal_year_start_end(fiscal_year)
+
+            customers = Member.objects.all()
+            success_count = 0
+            error_count = 0
+
+            for customer in customers:
+                # Check if interest for this fiscal year already exists
+                if not YearlyInterest.objects.filter(customer=customer, year=fiscal_year).exists():
+                    try:
+                        # Sum of deposits before fiscal year start
+                        previous_saving = Deposit.objects.filter(
+                            customer=customer,
+                            date__lt=fiscal_year_start_date
+                        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+                        # Sum of deposits from fiscal year start onwards
+                        current_saving = Deposit.objects.filter(
+                            customer=customer,
+                            date__gte=fiscal_year_start_date
+                        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+                        # Calculate interest amounts
+                        previous_interest = (previous_saving * previous_rate / Decimal('100')).quantize(Decimal('0.01'))
+                        current_interest = (current_saving * current_rate / Decimal('100')).quantize(Decimal('0.01'))
+
+                        # Update or create saving balance
+                        balance_obj, _ = SavingBalance.objects.get_or_create(customer=customer)
+                        balance_obj.balance += previous_interest + current_interest
+                        balance_obj.save()
+
+                        # Create YearlyInterest record
+                        YearlyInterest.objects.create(
+                            customer=customer,
+                            year=fiscal_year,
+                            previous_interest_rate=previous_rate,
+                            previous_interest_amount=previous_interest,
+                            current_interest_rate=current_rate,
+                            current_interest_amount=current_interest,
+                            remarks=f"Interest for FY {fiscal_year}"
+                        )
+                        
+                        Transaction.objects.create(
+                            member=customer,
+                            interest_paid=(current_interest + previous_interest),
+                            payment_method="interest",
+                            remarks=f"Interest credited for FY {fiscal_year}",
+                        )
+
+                        # Debug prints (can remove or comment out in production)
+                        print(f"Customer: {customer.name}")
+                        print(f"Previous Saving: Rs. {previous_saving}")
+                        print(f"Previous Interest ({previous_rate}%): Rs. {previous_interest}")
+                        print(f"Current Saving: Rs. {current_saving}")
+                        print(f"Current Interest ({current_rate}%): Rs. {current_interest}")
+                        print(f"Updated Balance: Rs. {balance_obj.balance}\n")
+
+                        success_count += 1
+                    except Exception as e:
+                        print(f"Error processing {customer.name}: {e}")
+                        error_count += 1
+
+            messages.success(request, f"Interest successfully added for {success_count} customers.")
+            if error_count:
+                messages.warning(request, f"Failed to process {error_count} customers. Check server logs.")
+
+        except Exception as e:
+            messages.error(request, f"Invalid input: {e}")
+
+        return redirect('saving_home')
+
+    return render(request, 'saving_home.html')
+
 
 
 # /saving/add/<int:member_id>/
@@ -230,19 +336,15 @@ def saving_add(request, member_id):
                     loan_obj = get_object_or_404(Loan, id=loan_id)
                     interest_due = loan_obj.interest_to_pay()
                     principal_due = loan_obj.remaining_principal
-
-                    # Step 1: Pay interest
+                    # Pay interest
                     interest_to_apply = min(user_interest, interest_due)
                     interest_excess = max(user_interest - interest_due, Decimal('0.00'))
-
-                    # Step 2: Add excess interest to principal input
+                    # Add excess interest to principal input
                     total_principal_input = user_principal + interest_excess
-
-                    # Step 3: Apply principal
+                    # Apply principal
                     principal_to_apply = min(total_principal_input, principal_due)
                     principal_excess = max(total_principal_input - principal_due, Decimal('0.00'))
-
-                    # Step 4: Record repayment
+                    # Record repayment
                     if interest_to_apply > 0 or principal_to_apply > 0:
                         Repayment.objects.create(
                             loan=loan_obj,
@@ -256,10 +358,8 @@ def saving_add(request, member_id):
                         loan_obj.remaining_principal = max(loan_obj.remaining_principal, Decimal('0.00'))
                         loan_obj.update_status_based_on_principal()
                         loan_obj.save()
-
                     total_repayment = interest_to_apply + principal_to_apply
-
-                # Step 5: Create deposit entry
+                # Create deposit entry
                 if user_saving > 0:
                     Deposit.objects.create(
                         customer=member,
@@ -268,19 +368,16 @@ def saving_add(request, member_id):
                         remarks=remarks,
                         date=date
                     )
-
-                # Step 6: Record other fee
+                # Record other fee
                 if other_fee > 0:
                     OtherFee.objects.create(
                         customer=member,
                         amount=other_fee,
                         remarks=remarks
                     )
-
-                # Step 7: Create transaction (calculate saving_balance correctly)
+                # Create transaction (calculate saving_balance correctly)
                 total_amount = user_saving + user_interest + user_principal + other_fee
                 saving_balance = user_saving + principal_excess  # This includes excess repayment NOT applied to loan
-
                 Transaction.objects.create(
                     member=member,
                     amount=total_amount,
@@ -292,14 +389,13 @@ def saving_add(request, member_id):
                     date=date,
                     remarks=remarks
                 )
-
                 messages.success(
                     request,
                     f"Saved: Saving = {user_saving}, Interest = {user_interest} (Applied: {interest_to_apply}), "
                     f"Principal = {user_principal} (+ Excess Interest {interest_excess}) → Applied: {principal_to_apply}, "
                     f"Other Fee = {other_fee}, Saving Balance Recorded = {saving_balance}"
                 )
-                return render(request, 'saving_home.html', {'member': member})
+                return redirect('saving_home')
             except Exception as e:
                 print("Error during saving:", e)
                 messages.error(request, "An error occurred while saving.")
@@ -307,6 +403,5 @@ def saving_add(request, member_id):
             messages.error(request, "Invalid form submission.")
     else:
         form = SavingAddForm(member=member)
-
     return render(request, 'saving_add.html', {'form': form, 'member': member, 'loan': loan})
 

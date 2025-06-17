@@ -44,7 +44,9 @@ Member Home
                     <td>{{ customer.address }}</td>
                     <td>{{ customer.occupation }}</td>
                     <td class="d-flex justify-content-center align-items-center">
-                        
+                        {% if user.authenticated == customer %}
+                        <p>Logged In</p>
+                        {% else %}
                         <form method="GET" action="{% url 'customer_update' customer.member_id %}">
                             <button class="btn btn-sm btn-outline-success m-2" type="submit">Edit</button>
                         </form><form method="GET" action="{% url 'customer_details' customer.member_id %}">
@@ -54,6 +56,7 @@ Member Home
                             {% csrf_token %}
                             <button class="btn btn-sm btn-outline-danger m-2" type="submit">Delete</button>
                         </form>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

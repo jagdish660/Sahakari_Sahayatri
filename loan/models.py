@@ -79,14 +79,16 @@ class Loan(models.Model):
 
 class Repayment(models.Model):
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='repayments')
+    previous_principal = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     repayment_date = models.DateField(default=timezone.now)
     amount_paid = models.DecimalField(max_digits=15, decimal_places=2, help_text="Total amount paid")
     principal_paid = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     interest_paid = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    remaining_principal = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     remarks = models.TextField(blank=True, null=True)
 
     class Meta:
-        ordering = ['repayment_date']
+        ordering = ['-repayment_date']
 
     def save(self, *args, **kwargs):
         if self.principal_paid == 0 and self.interest_paid == 0:
@@ -99,19 +101,21 @@ class Repayment(models.Model):
                 self.interest_paid = self.amount_paid
                 self.principal_paid = Decimal('0.00')
 
-            # Update remaining principal
-            self.loan.remaining_principal = (
-                Decimal(self.loan.remaining_principal) - Decimal(self.principal_paid)
-            ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-            self.loan.remaining_principal = max(self.loan.remaining_principal, Decimal('0.00'))
+        self.previous_principal = self.loan.remaining_principal
 
-            # Update status
-            if self.loan.remaining_principal == Decimal('0.00'):
-                self.loan.status = 'closed'
-            else:
-                self.loan.status = 'active'
+        # Update loan's remaining principal
+        new_remaining = (
+            Decimal(self.loan.remaining_principal) - Decimal(self.principal_paid)
+        ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
-            self.loan.save()
+        new_remaining = max(new_remaining, Decimal('0.00'))
+
+        self.loan.remaining_principal = new_remaining
+        self.loan.status = 'closed' if new_remaining == Decimal('0.00') else 'active'
+        self.loan.save()
+
+        # Store updated remaining principal in this repayment record
+        self.remaining_principal = new_remaining
 
         super().save(*args, **kwargs)
 

@@ -17,27 +17,21 @@ Member Detail
             <div class="col-md-6">
                 <p><strong>Address:</strong> {{ member.address }}</p>
                 <p><strong>Date of Birth:</strong> {{ member.date_of_birth }}</p>
+                <p><strong>Occupation:</strong> {{ member.occupation }}</p>
             </div>
             <div class="col-md-6">
                 <p><strong>Phone:</strong> {{ member.phone_number }}</p>
                 <p><strong>Email:</strong> {{ member.email }}</p>
+                <p><strong>Citizenship No.:</strong> {{ member.citizenship_number }}</p>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6">
-                <p><strong>Occupation:</strong> {{ member.occupation }}</p>
-            </div>
-            <div class="col-md-6">
-                <p><strong>Citizenship No.:</strong> {{ member.citizenship_number }}</p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
                 <p></p>
             </div>
             <div class="col-md-6">
-                <a href="{% url 'user_customer_update' member.member_id %}" class="links text-decoration-none text-black">Edit</a>
+                <a href="{% url 'user_customer_update' member.member_id %}" class="links text-decoration-none text-black"><img style="height:15px; width:15px;" src="{% static 'images/edit.png' %}"  alt="Edit"> Edit</a>
             </div>
         </div>
     </div>

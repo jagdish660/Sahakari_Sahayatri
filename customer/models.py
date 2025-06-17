@@ -50,6 +50,7 @@ class Transaction(models.Model):
     other_fee = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     payment_method = models.CharField(max_length=50, choices=[
         ('cash', 'Cash'),
+        ('interest', 'Interest'),
         ('cheque', 'Cheque'),
     ], default='cash')
     remarks = models.TextField(blank=True, null=True)
