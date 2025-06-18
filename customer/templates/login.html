@@ -10,10 +10,7 @@ Login
 <div class="form-div">
     <form method="post" action="{% url 'loginpage'  %}" class="form-member">
         {% csrf_token %}
-        <div class="mb-2">
-            <label for="member_id">Member ID:</label>
-            <input type="text" id="member_id" name="member_id" value="{{id}}" class="form-control">
-        </div>
+        
         <div class="mb-2">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" class="form-control" required>
@@ -25,6 +22,9 @@ Login
 
         <div class="mb-3 button-container">
             <button type="submit" class="btn btn-md btn-primary" value="submit">Login</button>
+        </div>
+        <div class="mb-3">
+            <a class="text-decoration-none fw-bold" href="{% url 'reset_password' %}">Forgot your password?</a>
         </div>
     </form>
 </div>

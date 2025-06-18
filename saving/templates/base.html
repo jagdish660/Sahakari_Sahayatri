@@ -47,7 +47,7 @@
                                 </li>
                             {% else %}
                                 <li class="nav-item">
-                                    <a class="nav-link active" href="" tabindex="-1">About Me</a>
+                                    <a class="nav-link active" href="{% url 'about_me' %}" tabindex="-1">About Me</a>
                                 </li>
                             {% endif %}
                         {% endif %}
@@ -74,7 +74,7 @@
                                     <a class="nav-link active" href="" tabindex="-1">Signup</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link active" href="" tabindex="-1">Login</a>
+                                    <a class="nav-link active" href="{% url 'loginpage' %}" tabindex="-1">Login</a>
                                 </li>
                             {% endif %}
                         {% endif %}
@@ -92,7 +92,6 @@
                 {% endif %}
             </div>
         </nav>
-
 
 
         <!-- Setting Popup -->
@@ -194,7 +193,7 @@
                 <div class="col-12 col-md-3">
                     <div class="footer-link text-center">Contact Us <hr></div>
                     <div class="footer-link-text">
-                        <a class="contact-link" target="_blank" href="mailto:">
+                        <a class="contact-link" target="_blank" href="mailto:info.sahakarisahayatri@gmail.com">
                             <img class="contact-img m-2" src="{% static 'images/emaill.png' %}" alt="mail"> Email
                         </a><br>
                         <a class="contact-link" target="_blank" href="tel:">

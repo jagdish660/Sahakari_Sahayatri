@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Loan Update: {{ loan.customer.first_name }}
+Loan Payment: {{ loan.customer.name }}
 {% endblock %}
 
 {% block content %}
@@ -35,12 +35,12 @@ Loan Update: {{ loan.customer.first_name }}
 
         <div class="mb-3">
             <label for="id_interest_paid" class="form-label">Interest Paid:</label>
-            <input type="number" step="0.01" id="id_interest_paid" name="interest_paid" class="form-control" required>
+            <input type="number" step="0.01" id="id_interest_paid" value="0" name="interest_paid" class="form-control">
         </div>  
 
         <div class="mb-3">
             <label for="id_principal_paid" class="form-label">Principal Paid:</label>
-            <input type="number" step="0.01" id="id_principal_paid" name="principal_paid" class="form-control" required>
+            <input type="number" step="0.01" id="id_principal_paid" value="0" name="principal_paid" class="form-control">
         </div>  
 
         <div class="mb-3">

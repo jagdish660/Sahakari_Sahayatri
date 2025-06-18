@@ -57,8 +57,8 @@ Savings
             {% for customer in page_obj %}
                 <tr class="align-middle  text-center">
                     <td>{{ forloop.counter0|add:page_obj.start_index }}.</td>
-                    <td><a href="" class="links text-decoration-none text-black fw-bold">{{ customer.id }}</a></td>
-                    <td><a href="" class="links text-decoration-none text-black fw-bold">{{ customer.name }}</a></td>
+                    <td><a href="{% url 'customer_details' customer.id %}" class="links text-decoration-none text-black fw-bold">{{ customer.id }}</a></td>
+                    <td><a href="{% url 'customer_details' customer.id %}" class="links text-decoration-none text-black fw-bold">{{ customer.name }}</a></td>
                     <td>Rs {{ customer.previous_saving|floatformat:2 }}</td>
                     <td>Rs {{ customer.current_saving|floatformat:2 }}</td>
                     <td>Rs {{ customer.total_interest|floatformat:2 }}</td>

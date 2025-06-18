@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-Member Detail
+About Me
 {% endblock title %}
 
 {% block content %}
@@ -10,75 +10,81 @@ Member Detail
     <h2>Details</h2>
     <div class="info container mt-4">
         <div class="row mb-3">
-            <h4 class="text-center">{{ member.member_id }} - {{name}}</h4>
+            <h4 class="text-center">{{member.name}}</h4>
         </div>
 
+        <!-- Personal Details -->
         <div class="row mb-2">
             <div class="col-md-6">
+                <p><strong>Member ID:</strong> {{ member.member_id }}</p>
                 <p><strong>Address:</strong> {{ member.address }}</p>
                 <p><strong>Date of Birth:</strong> {{ member.date_of_birth }}</p>
                 <p><strong>Occupation:</strong> {{ member.occupation }}</p>
             </div>
             <div class="col-md-6">
+                <p>,</p>
                 <p><strong>Phone:</strong> {{ member.phone_number }}</p>
                 <p><strong>Email:</strong> {{ member.email }}</p>
                 <p><strong>Citizenship No.:</strong> {{ member.citizenship_number }}</p>
             </div>
         </div>
-        {% if request.user.is_normaluser %}
-        <div class="row">
-            <div class="col-md-6">
-                <p></p>
+        <!-- Edit button -->
+        {% if not request.user.is_staff or request.user.is_superuser %}
+            <div class="row">
+                <div class="col-md-6"></div>
+                <div class="col-md-6">
+                    <a href="{% url 'user_customer_update' member.member_id %}" class="links text-decoration-none text-black"><img style="height:15px; width:15px;" src="{% static 'images/edit.png' %}"  alt="Edit"> Edit</a>
+                </div>
             </div>
-            <div class="col-md-6">
-                <a href="{% url 'user_customer_update' member.member_id %}" class="links text-decoration-none text-black"><img style="height:15px; width:15px;" src="{% static 'images/edit.png' %}"  alt="Edit"> Edit</a>
-            </div>
-        </div>
         {% endif %}
     </div>
 
+    <!-- Saving -->
     <div class="m-3">
         <h5>Saving</h5>
-
         <p>
             Saving amount : {{total_saved}}
-    </p>
-        <table class="table table-responsive table-striped table-hover table-bordered mt-3 text-center">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Previous Balance</th>
-                    <th>Deposit</th>
-                    <th>Refund</th>
-                    <th>Balance</th>
-                    <th>Type</th>
-                    <th>Remarks</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for tx in page_obj %}
-                    {% if forloop.counter <= 5 %}
+        </p>
+        {% if page_obj %}
+            <table class="table table-responsive table-striped table-hover table-bordered mt-3 text-center">
+                <thead>
                     <tr>
-                        <td>{{ tx.date }}</td>
-                        <td>Rs {{ tx.previous_balance }}</td>
-                        {% if tx.type == "Deposit" or  tx.type == "Interest" %}
-                            <td>Rs {{ tx.amount }}</td>
-                        {% else %}
-                            <td>-</td>
-                        {% endif %}
-                        {% if tx.type == "Refund" %}
-                            <td>Rs {{ tx.amount }}</td>
-                        {% else %}
-                            <td>-</td>
-                        {% endif %}
-                        <td>Rs {{ tx.balance }}</td>
-                        <td>{{ tx.type }}</td>
-                        <td>{{ tx.remarks }}</td>
+                        <th>Date</th>
+                        <th>Previous Balance</th>
+                        <th>Deposit</th>
+                        <th>Refund</th>
+                        <th>Balance</th>
+                        <th>Type</th>
+                        <th>Remarks</th>
                     </tr>
-                    {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for tx in page_obj %}
+                        <tr>
+                            <td>{{ tx.date }}</td>
+                            <td>Rs {{ tx.previous_balance }}</td>
+                            {% if tx.type == "Deposit" or  tx.type == "Interest" %}
+                                <td>Rs {{ tx.amount }}</td>
+                            {% else %}
+                                <td>-</td>
+                            {% endif %}
+                            {% if tx.type == "Refund" %}
+                                <td>Rs {{ tx.amount }}</td>
+                            {% else %}
+                                <td>-</td>
+                            {% endif %}
+                            <td>Rs {{ tx.balance }}</td>
+                            <td>{{ tx.type }}</td>
+                            <td>{{ tx.remarks }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+        {% else %}
+            <p>No Saving Data available.</p>
+        {% endif %}
+
         <!-- Pagination -->
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center">
@@ -140,8 +146,8 @@ Member Detail
                                 <td><p class="btn btn-sm btn-success">Active</p></td>
                                 <td>{{ loan.remarks }}</td>
                                 <td>
-                                    <a href="{% url 'loan_update' loan.id %}" class="btn btn-sm btn-outline-success m-1">Pay</a>
-                                    <a href="{% url 'loan_details' loan.id %}" class="btn btn-sm btn-outline-primary m-1">View</a>
+                                    <a href="{% url 'loan_update' loan.id %}" class="btn btn-sm btn-success m-1">Pay</a>
+                                    <a href="{% url 'loan_details' loan.id %}" class="btn btn-sm btn-primary m-1">View</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -150,13 +156,15 @@ Member Detail
             {% endfor %}
             <div class="container">
                 <p>Want to check loan history?</p>
-                <a href="{% url 'user_loan_all' member.member_id %}" class="btn btn-sm btn-primary">Click Here</a>
+                <a href="{% url 'loan_all' %}" class="btn btn-sm btn-primary">Click Here</a>
             </div>
         {% else %}
             <p>No loan transactions available.</p>
         {% endif %}
-    </div><br>
+    </div>
+    <br>
 
+    <!-- Share -->
     <div class="m-3">
         <h5>Share</h5>
         <p>

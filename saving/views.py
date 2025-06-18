@@ -25,6 +25,7 @@ def get_fiscal_year_start():
 # /
 @login_required(login_url='loginpage')
 def home(request):
+    
     return render(request, 'home.html')
 
 
@@ -185,7 +186,6 @@ def saving_details(request, member_id):
             'payment_method': METHOD_DISPLAY.get(tx['payment_method'], tx['payment_method']),
             'remarks': tx['remarks'],
         })
-    print(total_interest)
     paginator = Paginator(detailed_transactions,25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Email Verification
+{% endblock title %}
+
+{% block content %}
+<div class="text-center"><h1 class="p-3">Email Verification</h1></div>
+<div class="form-div">
+    <form class="form-user" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label" for="code">Enter the verification code sent to your email:</label>
+            <input type="text" name="code" id="code" class="form-control" placeholder="123456" required>
+        </div>
+        <div class="button-container mb-3">
+            <button type="submit" class="btn-sm more-btn btn-primary">Verify Code</button>
+        </div>
+    </form>
+    
+</div>
+<div class="text-center m-5">
+        <p><strong>Didn't receive the code? </strong>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="resend_code" value="true">
+            <button type="submit" class="btn-sm px-3 py-1 mx-2 more-btn text-decoration-none btn-info">
+                <strong>Resend Code</strong>
+            </button>
+        </form>
+
+        </p>
+    </div>
+<form action="{% url 'reset_password' %}" class="back">
+    <button class="btn-sm px-3 more-btn btn-danger m-3">Back</button>
+</form>
+{% endblock content %}
