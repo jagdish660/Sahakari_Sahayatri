@@ -22,7 +22,7 @@ Member Home
     <a href="{% url 'customer_add' %}" class="btn btn-primary m-2 text-decoration-none btn-md">Add Member</a>
     <div class="card m-3">
         <h3>List of customers</h3>
-        <table class="table table-striped table-responsive justify-content-center align-items-center">
+        <table class="table table-striped table-responsive table-hover table-success">
             <tr class="align-middle  text-center">
                 <th>S.N.</th>
                 <th>ID</th>
@@ -56,7 +56,7 @@ Member Home
                             </form><form method="GET" action="{% url 'customer_details' customer.member_id %}">
                                 <button class="btn btn-sm btn-outline-primary m-2" type="submit">View</button>
                             </form>
-                            <form method="POST" action="{% url 'customer_delete' customer.member_id %}">
+                            <form method="POST" action="{% url 'customer_delete' customer.member_id %}" onsubmit="return confirm('Are you sure you want to delete {{ customer.name }} (ID: {{ customer.member_id }})?');">
                                 {% csrf_token %}
                                 <button class="btn btn-sm btn-outline-danger m-2" type="submit">Delete</button>
                             </form>

@@ -111,15 +111,48 @@ def member_details(request, member_id):
             'status': loan.status
         } for loan in loans]
         # === Share Transactions ===
-        shares = ShareCapital.objects.filter(customer=member).order_by('purchase_date')
-        share_transactions = []
-        total_share = Decimal('0.00')
-        for share in shares:
-            total_share += share.share_amount
-            share_transactions.append({
+        share_purchases = ShareCapital.objects.filter(customer=member)
+        share_refunds = ShareRefund.objects.filter(customer=member)
+        share_events = []
+
+        # Combine purchases and refunds
+        for share in share_purchases:
+            share_events.append({
                 'date': share.purchase_date,
-                'amount': share.share_amount
+                'amount': Decimal(share.share_amount),
+                'type': 'Purchase',
+                'remarks': getattr(share, 'remarks', '')
             })
+
+        for refund in share_refunds:
+            share_events.append({
+                'date': refund.refund_date,
+                'amount': Decimal(-refund.refund_amount),  # refund reduces balance
+                'type': 'Refund',
+                'remarks': f"Refunded {refund.refund_amount} shares"
+            })
+
+        # Sort by date
+        share_events.sort(key=lambda x: x['date'])
+
+        total_share = Decimal('0.00')
+        running_share = Decimal('0.00')
+        share_transactions = []
+
+        for event in share_events:
+            previous_share = running_share
+            running_share += event['amount']
+            share_transactions.append({
+                'date': event['date'],
+                'type': event['type'],
+                'amount': abs(event['amount']),
+                'previous_share': previous_share,
+                'balance': running_share,
+                'remarks': event['remarks'],
+            })
+
+        total_share = running_share 
+
         paginator = Paginator(detailed_transactions, 25)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)

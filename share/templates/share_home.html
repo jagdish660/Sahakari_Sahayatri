@@ -12,9 +12,9 @@ Share Home
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
             <h4>Total Share</h4>
-            <p class="fs-3 fw-bold">Rs. {{total_shares}}</p>
-            <p>Total shares from previous year: Rs. {{current_year_shares}}</p>
-            <p>Total shares of current year: Rs. {{previous_year_shares}}</p>
+            <p class="fs-3 fw-bold">Rs. {{total_shares|floatformat:2}}</p>
+            <p>Total shares from previous year: Rs. {{current_year_shares|floatformat:2}}</p>
+            <p>Total shares of current year: Rs. {{previous_year_shares|floatformat:2}}</p>
             
         </div>
     </div>
@@ -22,7 +22,7 @@ Share Home
 
 <div class="card m-3">
     <h3>List of share holders</h3>
-    <table class="table table-striped table-responsive justify-content-center align-items-center">
+    <table class="table table-striped table-responsive table-success table-hover justify-content-center align-items-center">
         <tr class="align-middle  text-center">
             <th>S.N.</th>
             <th>Name</th>
@@ -34,18 +34,13 @@ Share Home
         {% for sh in share %}
         <tr class="align-middle text-center">
             <td>{{ forloop.counter }}.</td>
-            {% if sh.customer.middle_name %}
-            <td><a href="#" class="links text-decoration-none text-black fw-bold">{{ sh.customer.first_name }} {{sh.customer.middle_name}} {{sh.customer.last_name }}</a></td>
-            {% else %}
-            <td><a href="#" class="links text-decoration-none text-black fw-bold">{{ sh.customer.first_name }} {{sh.customer.last_name}}</a></td>
-            {% endif %}
+            <td><a href="#" class="links text-decoration-none text-black fw-bold">{{ sh.customer.name }}</a></td>
             <td>{{ sh.customer.address }}</td>
-            <td>Rs. {{ sh.balance }}</td>
+            <td>Rs. {{ sh.balance|floatformat:2 }}</td>
             <td>
                 <a href="{% url 'share_details' sh.customer.member_id %}" class="btn btn-sm btn-outline-primary m-1">View</a>
-
-                <button class="btn btn-sm btn-outline-success m-1">Edit</button>
-                <button class="btn btn-sm btn-outline-danger m-1">Delete</button>
+                <a href="{% url 'share_add' sh.customer.member_id %}" class="btn btn-sm btn-outline-success m-1">Add</a>
+                <a href="{% url 'share_refund' sh.customer.member_id %}" class="btn btn-sm btn-outline-danger m-1">Refund</a>
             </td>
         </tr>
         {% endfor %}

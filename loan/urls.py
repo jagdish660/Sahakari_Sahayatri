@@ -4,6 +4,8 @@ from loan import views as loan
 
 urlpatterns = [
     path('', loan.loan_home, name='loan_home'),
+    path('add/', loan.loan_add, name='loan_add'),
+    path('add/<int:id>', loan.loan_add_individual, name='loan_add_individual'),
     path('details/<int:id>', loan.loan_details, name='loan_details'),
     path('all/', loan.loan_all, name='loan_all'),
     path('all/<int:id>', loan.user_loan_all, name='user_loan_all'),

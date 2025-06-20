@@ -11,7 +11,7 @@ Share Details: {{ member.first_name }} {{ member.last_name }}
 
 <div class="card m-3">
     <h3>Transaction History</h3>
-    <table class="table table-striped table-responsive table-hover">
+    <table class="table table-striped table-responsive table-hover table-success">
         <thead>
             <tr class="text-center align-middle">
                 <th rowspan="2">S.N.</th>
@@ -31,15 +31,15 @@ Share Details: {{ member.first_name }} {{ member.last_name }}
                 <tr class="text-center align-middle">
                     <td>{{ forloop.counter }}.</td>
                     <td>{{ tx.transaction_date|date:"Y-m-d" }}</td>
-                    <td>Rs. {{ tx.previous_balance }}</td>
+                    <td>Rs. {{ tx.previous_balance|floatformat:2 }}</td>
                     {% if tx.transaction_type == "purchase" %}
-                        <td>Rs. {{ tx.transaction_amount }}</td>
+                        <td>Rs. {{ tx.transaction_amount|floatformat:2 }}</td>
                         <td>-</td>
                     {% else %}  
                         <td>-</td>
-                        <td>Rs. {{ tx.transaction_amount }}</td>
+                        <td>Rs. {{ tx.transaction_amount|floatformat:2 }}</td>
                     {% endif %}
-                    <td>Rs. {{ tx.balance_after }}</td>
+                    <td>Rs. {{ tx.balance_after|floatformat:2 }}</td>
                 </tr>
                 {% endfor %}
             {% else %}

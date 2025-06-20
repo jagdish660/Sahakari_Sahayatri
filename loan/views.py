@@ -201,4 +201,72 @@ def user_loan_all(request, id):
         'member':member,
     }
     return render(request, 'user_loan_all.html', context)
-    # return render(request, 'user_loan_all.html')
+
+
+# /loan/add/
+def loan_add(request):
+    members = Member.objects.all()
+    if request.user.is_staff or request.user.is_superuser:
+        if request.method == 'POST':
+            customer_id = request.POST.get('customer_id')
+            principal = request.POST.get('principal')
+            rate = request.POST.get('rate')
+            if not customer_id:
+                messages.error(request, "Please select a valid customer.")
+                return render(request, 'loan_add.html', {'members': members})
+            try:
+                customer = Member.objects.get(pk=int(customer_id))
+                if Loan.objects.filter(customer=customer, status='active').exists():
+                    messages.error(request, f"{customer.name} already has an active loan.")
+                    return render(request, 'loan_add.html', {'members': members})
+                Loan.objects.create(
+                    customer=customer,
+                    amount=Decimal(principal),
+                    interest_rate=Decimal(rate),
+                    start_date=timezone.now()
+                )
+                messages.success(request, f"Loan successfully deployed to {customer.name}.")
+                return redirect('loan_home')
+            except Member.DoesNotExist:
+                messages.error(request, "Selected customer not found.")
+            except Exception as e:
+                messages.error(request, f"Unexpected Error: {e}")
+        return render(request, 'loan_add.html', {'members': members})
+    else:
+        messages.error(request, "You're not allowed to perform this task.")
+        return redirect('home')
+
+
+# /loan/add/<int:id>/
+def loan_add_individual(request, id):
+    member = get_object_or_404(Member, member_id=id)
+    
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "You're not allowed to perform this task.")
+        return redirect('home')
+
+    if request.method == 'POST':
+        principal = request.POST.get('principal')
+        rate = request.POST.get('rate')
+
+        try:
+            # Check for active loan
+            if Loan.objects.filter(customer=member, status='active').exists():
+                messages.error(request, f"{member.name} already has an active loan.")
+                return render(request, 'loan_add_individual.html', {'member': member})
+
+            # Deploy loan
+            Loan.objects.create(
+                customer=member,
+                amount=Decimal(principal),
+                interest_rate=Decimal(rate),
+                start_date=timezone.now()
+            )
+            messages.success(request, f"Loan successfully deployed to {member.name}.")
+            return redirect('customer_details', member.member_id)
+
+        except Exception as e:
+            messages.error(request, f"Unexpected Error: {e}")
+
+    return render(request, 'loan_add_individual.html', {'member': member})
+

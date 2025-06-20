@@ -1,13 +1,15 @@
 from multiprocessing import Value
 from django.forms import CharField
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from share.models import ShareBalance, ShareCapital, ShareRefund
-from customer.models import Member
+from customer.models import Member, Transaction
 from itertools import chain
 from operator import attrgetter
 from django.db.models import F, Value as DBValue, CharField
+from django.contrib import messages
+from decimal import Decimal
 
 # Create your views here.
 
@@ -33,6 +35,102 @@ def share_home(request):
     }
     return render(request, 'share_home.html', context)
 
+
+# /share/add/<int:id>/
+from decimal import Decimal, InvalidOperation
+
+def share_add(request, id):
+    member = get_object_or_404(Member, member_id=id)
+
+    if request.user.is_staff or request.user.is_superuser:
+        if request.method == "POST":
+            try:
+                raw_amount = request.POST.get('amount')
+                amount = Decimal(raw_amount)  # Ensure Decimal conversion
+
+                ShareCapital.objects.create(
+                    customer=member,
+                    share_amount=int(amount),  # If share_amount is IntegerField
+                    purchase_date=timezone.now()
+                )
+
+                Transaction.objects.create(
+                    member=member,
+                    date=timezone.now(),
+                    amount=amount,
+                    share=amount,
+                    remarks=f"Share purchased on {timezone.now()}",
+                    payment_method='cash'
+                )
+
+                messages.success(request, f"Share purchased successfully for Rs. {amount}.")
+                return redirect('customer_details', member_id=member.member_id)
+
+            except (InvalidOperation, ValueError):
+                messages.error(request, "Invalid amount. Please enter a valid number.")
+                return redirect('customer_details', member_id=member.member_id)
+
+            except Exception as e:
+                messages.error(request, f"Error occurred: {e}")
+                print(e)
+                return redirect('customer_details', member_id=member.member_id)
+
+        return render(request, 'share_add.html', {'member': member})
+
+    else:
+        messages.error(request, "You're not authorized to perform this action.")
+        return redirect('home')
+
+
+# /share/refund/<int:id>/
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from decimal import Decimal
+from django.utils import timezone
+
+from customer.models import Member, Transaction
+from share.models import ShareRefund, ShareBalance
+
+def share_refund(request, id):
+    member = get_object_or_404(Member, member_id=id)
+
+    if request.method == "POST":
+        try:
+            amount = Decimal(request.POST.get('amount'))
+            
+            # Get the current share balance
+            share_balance_obj = ShareBalance.objects.filter(customer=member).first()
+            current_balance = Decimal(share_balance_obj.balance) if share_balance_obj else Decimal('0.00')
+
+            if amount <= 0:
+                messages.error(request, "Refund amount must be positive.")
+            elif amount > current_balance:
+                messages.error(request, f"Refund amount exceeds available shares. Available: {current_balance}")
+            else:
+                # Create share refund record
+                ShareRefund.objects.create(
+                    customer=member,
+                    refund_amount=int(amount),
+                    refund_date=timezone.now()
+                )
+
+                # Create transaction record
+                Transaction.objects.create(
+                    member=member,
+                    date=timezone.now(),
+                    amount=Decimal('0.00'),
+                    share=-amount,
+                    remarks=f"Share refund of Rs. {amount} on {timezone.now().date()}"
+                )
+
+                messages.success(request, f"Successfully refunded Rs. {amount} from shares.")
+                return redirect('customer_details', member_id=member.member_id)
+
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+            print(e)
+
+    return render(request, 'share_refund.html', {'member': member})
 
 
 # /share/<int:id>/

@@ -8,7 +8,27 @@ Sahakari Sahayatri
 {% block content %}
 <h2>Sahakari Sahayatri</h2>
 
-
+<h2 class="p-3">Graphs</h2>
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Saving</h4>
+            <p class="fs-3 fw-bold">--</p>
+            <a href="{% url 'saving_home' %}">
+                <button class="btn btn-outline-success">Manage</button>
+            </a>
+        </div>
+    </div>  
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Loan</h4>
+            <p class="fs-3 fw-bold">--</p>
+            <a href="{% url 'saving_home' %}">
+                <button class="btn btn-outline-success">Manage</button>
+            </a>
+        </div>
+    </div>  
+</div>
 
 
 {% endblock content %}

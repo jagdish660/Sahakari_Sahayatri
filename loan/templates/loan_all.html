@@ -13,7 +13,7 @@ Loan History
     {% if request.user.is_staff or request.user.is_superuser %}
         <h3>List of loan history</h3>
 
-        <table class="table table-striped table-responsive justify-content-center align-items-center">
+        <table class="table table-striped table-responsive table-hover table-success">
             <tr class="align-middle  text-center">
                 <th rowspan="2">S.N.</th>
                 <th rowspan="2">Member ID</th>
@@ -37,10 +37,10 @@ Loan History
                         <td>Rs. {{ loan.amount }}</td>
                         <td>Rs. {{ loan.remaining_principal }}</td>
                         {% if loan.status == "active" %}
-                            <td><button  class="btn-sm btn-success">Active</pb></td>
+                            <td><button  class="btn btn-sm btn-success disabled">Active</pb></td>
                         {% else %}
                             <td>
-                            <button class="btn-sm btn-danger">Closed</button></td>
+                            <button class="btn btn-sm btn-danger disabled">Closed</button></td>
                         {% endif %}
                         <td>
                             <a href="{% url 'loan_details' loan.id %}" class="btn btn-sm btn-outline-primary m-1">View</a>
