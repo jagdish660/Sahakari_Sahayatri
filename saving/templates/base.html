@@ -35,9 +35,6 @@
                                 <li class="nav-item">
                                     <a class="nav-link active" aria-current="page" href="{% url 'customer_home' %}">Members</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link active" aria-current="page" href="">Users</a>
-                                </li>
                             {% elif user.is_normaluser %}
                                 <li class="nav-item">
                                     <a class="nav-link active" aria-current="page" href="">Saving</a>
@@ -54,7 +51,7 @@
 
                         {% if user.is_staff and request.path == '' %}
                             <li class="nav-item">
-                                <a class="nav-link active" href="" tabindex="-1">List of colleges</a>
+                                <a class="nav-link active" href="" tabindex="-1">MEMBERLIST</a>
                             </li>
                         {% else %}
                             

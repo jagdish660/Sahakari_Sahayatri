@@ -78,7 +78,6 @@ About Me
                     {% endfor %}
                 </tbody>
             </table>
-            
         {% else %}
             <p>No Saving Data available.</p>
         {% endif %}
@@ -144,7 +143,6 @@ About Me
                                 <td><p class="btn btn-sm btn-success">Active</p></td>
                                 <td>{{ loan.remarks }}</td>
                                 <td>
-                                    <a href="{% url 'loan_update' loan.id %}" class="btn btn-sm btn-success m-1">Pay</a>
                                     <a href="{% url 'loan_details' loan.id %}" class="btn btn-sm btn-primary m-1">View</a>
                                 </td>
                             </tr>
@@ -166,7 +164,7 @@ About Me
     <div class="m-3">
         <h5>Share</h5>
         <p>
-            Share : {{total_share}}
+            Share :<span class="fw-bold"> {{total_share}}</span>
         </p>
         {% if share_transactions %}
             <table class="table table-success table-responsive table-striped table-bordered mt-3 text-center table-hover">
