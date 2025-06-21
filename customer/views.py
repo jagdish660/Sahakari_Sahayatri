@@ -30,7 +30,6 @@ def member_home(request ):
         messages.error(request, "You're not allowed to enter this page.")
     
 
-
 #  /member/details/<int:member_id>
 @login_required(login_url='loginpage')
 def member_details(request, member_id):
@@ -100,7 +99,7 @@ def member_details(request, member_id):
             })
         detailed_transactions.reverse()
         # === Loan Transactions ===
-        loans = Loan.objects.filter(customer=member).order_by('start_date')
+        loans = Loan.objects.filter(customer=member).order_by('-start_date')
         loan_transactions = [{
             'id': loan.id,
             'date': loan.start_date,
@@ -153,7 +152,7 @@ def member_details(request, member_id):
 
         total_share = running_share 
 
-        paginator = Paginator(detailed_transactions, 25)
+        paginator = Paginator(detailed_transactions, 3)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         return render(request, 'customer_details.html', {
@@ -270,7 +269,6 @@ def about_me(request):
     })
 
 
-
 # /member/add
 @login_required(login_url='loginpage')
 def member_add(request):
@@ -308,7 +306,7 @@ def member_add(request):
             try:
                 # Create the User FIRST
                 full_first_name = f"{first_name} {middle_name}" if middle_name else first_name
-                username = f"{first_name.lower()}_{member_id}"
+                username = f"{''.join(filter(str.strip, first_name.lower()))}_{member_id}"
                 alphabet = string.ascii_letters + string.digits + ".@#$%&"
                 password = ''.join(secrets.choice(alphabet) for _ in range(8))
 

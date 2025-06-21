@@ -10,25 +10,45 @@ Login
 <div class="form-div">
     <form method="post" action="{% url 'loginpage'  %}" class="form-member">
         {% csrf_token %}
-        
+
         <div class="mb-2">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" class="form-control" required>
         </div>
-        <div class="mb-2">
+
+        <div class="mb-3 position-relative">
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password"class="form-control" required>
+            <div class="position-relative">
+                <input type="password" id="password" name="password" class="form-control pe-5" required autocomplete="current-password" onpaste="return false">
+                <i id="password-icon" class="fas fa-eye position-absolute"
+                   style="top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;"
+                   onclick="togglePassword('password')"></i>
+            </div>
         </div>
 
         <div class="mb-3 button-container">
             <button type="submit" class="btn btn-md btn-primary" value="submit">Login</button>
         </div>
+
         <div class="mb-3">
             <a class="text-decoration-none fw-bold" href="{% url 'reset_password' %}">Forgot your password?</a>
         </div>
     </form>
 </div>
 
-
-
+<script>
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById(`${fieldId}-icon`);
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
 {% endblock content %}
