@@ -1,5 +1,7 @@
 from django.urls import path
+from django.shortcuts import redirect
 from customer import views as customer
+
 
 
 urlpatterns = [
@@ -10,12 +12,14 @@ urlpatterns = [
     path('reset_password/', customer.reset_password, name='reset_password'),
     path('verify_code/', customer.verify_code, name='verify_code'),
     
-    path('', customer.member_home, name='customer_home'),
-    path('add/', customer.member_add, name='customer_add'),
-    path('update/<int:id>/', customer.update_customer, name='customer_update'),
-    path('delete/<int:id>/', customer.delete_customer, name='customer_delete'),
-    path('details/update/<int:id>/', customer.user_update_customer, name='user_customer_update'),
-    path('details/<int:member_id>/', customer.member_details, name='customer_details'),
-    
+    path('', customer.home, name='home'),
+    path('home/', customer.user_home, name='user_home'),
     path('about_me/', customer.about_me, name='about_me'),
+    
+    path('member/', customer.member_home, name='customer_home'),
+    path('member/add/', customer.member_add, name='customer_add'),
+    path('member/update/<int:id>/', customer.update_customer, name='customer_update'),
+    path('member/delete/<int:id>/', customer.delete_customer, name='customer_delete'),
+    path('member/details/update/<int:id>/', customer.user_update_customer, name='user_customer_update'),
+    path('member/details/<int:member_id>/', customer.member_details, name='customer_details'),
 ]

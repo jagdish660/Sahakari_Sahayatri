@@ -84,7 +84,6 @@ class YearlyInterest(models.Model):
 
     def get_shrawan_1_date(self):
         return date(self.year, 7, 17)
-
     def calculate_interest(self):
         from decimal import Decimal, ROUND_HALF_UP
 
@@ -114,7 +113,6 @@ class YearlyInterest(models.Model):
                 running_balance += tx['amount']
                 post_balance = running_balance - pre_balance
 
-        # Ensure post_balance is not negative
         if post_balance < 0:
             post_balance = Decimal('0.00')
 
@@ -134,18 +132,8 @@ class YearlyInterest(models.Model):
         }
 
     def save(self, *args, **kwargs):
-        interest_values = self.calculate_interest()
-
-        self.previous_interest_amount = interest_values['pre_interest']
-        self.current_interest_amount = interest_values['post_interest']
-
+        # No automatic recalculation — values will come from the view/form
         super().save(*args, **kwargs)
-
-        if self._state.adding:  # Only add interest to saving balance when creating a new record
-            total_interest = interest_values['pre_interest'] + interest_values['post_interest']
-            balance_obj, _ = SavingBalance.objects.get_or_create(customer=self.customer)
-            balance_obj.balance += total_interest
-            balance_obj.save()
 
 
 class SavingRefund(models.Model):

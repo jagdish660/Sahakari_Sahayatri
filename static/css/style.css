@@ -4,6 +4,19 @@
     position: relative;
 }
 
+.links{
+    text-decoration: none;
+    color: black;
+    padding: 5px;
+}
+.links:hover {
+    text-decoration: underline;
+    color:rgb(51, 49, 49);
+    background-color:rgb(221, 218, 218);
+    padding: 5px;
+    border-radius: 2px;
+}
+
 /* Footer styling */
 .footer {
     background-color:rgb(77, 78, 78);
@@ -1232,4 +1245,32 @@ body {
     align-items: center;
     border: 1px solid #ccc;
     border-radius: 10px;
+}
+
+/* Navbar Dropdown Effects */
+.dropdown-success-bg {
+  background-color: rgb(220, 252, 233);
+}
+
+.dropdown-success-link:hover,
+.dropdown-success-bg .dropdown-item:hover {
+  background-color: rgb(25, 135, 84) !important;
+  color: white !important;
+}
+
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu > .dropdown-menu {
+  top: 0;
+  left: 90%;
+  margin-top: -1px;
+  display: none;
+  position: absolute;
+  border: 1px solidrgb(82, 81, 81);
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block;
 }

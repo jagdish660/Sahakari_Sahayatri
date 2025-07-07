@@ -46,26 +46,18 @@ class Transaction(models.Model):
     interest_paid = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
     share = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
     other_fee = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
-    payment_method = models.CharField(max_length=50, choices=[
-        ('cash', 'Cash'),
-        ('interest', 'Interest'),
-        ('cheque', 'Cheque'),
-    ], default='cash')
+    payment_method = models.CharField(
+        max_length=50,
+        choices=[
+            ('cash', 'Cash'),
+            ('interest', 'Interest'),
+            ('cheque', 'Cheque'),
+        ],
+        default='cash'
+    )
     remarks = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        latest = Transaction.objects.filter(member=self.member).order_by('-date').first()
-
-        amount = Decimal(self.amount)
-        loan_repayment = Decimal(self.loan_repayment)
-        interest_paid = Decimal(self.interest_paid)
-        latest_saving_balance = Decimal(latest.saving_balance) if latest else Decimal('0.00')
-
-        if latest and latest.pk != self.pk:
-            self.saving_balance = latest_saving_balance + amount - loan_repayment - interest_paid
-        else:
-            self.saving_balance = amount - loan_repayment - interest_paid
-
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -73,3 +65,4 @@ class Transaction(models.Model):
 
     class Meta:
         ordering = ['-date']
+

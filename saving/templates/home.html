@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block title %}
-Sahakari Sahayatri
+Transaction
 {% endblock title %}
 
 {% block content %}
-<h2>Sahakari Sahayatri</h2>
+<h1 class="m-4 text-center text-primary">Sahakari Sahayatri</h1>
 
 <h2 class="p-3">Graphs</h2>
 <div class="row justify-content-center m-3">
@@ -14,21 +14,146 @@ Sahakari Sahayatri
         <div class="card transaction-card text-center p-3">
             <h4>Saving</h4>
             <p class="fs-3 fw-bold">--</p>
+            {% if request.user.is_superuser or request.user.is_staff %}
             <a href="{% url 'saving_home' %}">
                 <button class="btn btn-outline-success">Manage</button>
             </a>
+            {% endif %}
         </div>
     </div>  
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
             <h4>Loan</h4>
             <p class="fs-3 fw-bold">--</p>
+            {% if request.user.is_superuser or request.user.is_staff %}
             <a href="{% url 'saving_home' %}">
                 <button class="btn btn-outline-success">Manage</button>
             </a>
+            {% endif %}
         </div>
     </div>  
 </div>
 
+<h2 class="p-3">Transaction</h2>
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total Saving</h4>
+            <p class="fs-3 fw-bold">Rs. {{total_savings}}</p>
+            <p>Total savings from previous year: Rs. {{current_year_savings}}</p>
+            <p>Total savings of current year: Rs. {{previous_year_savings}}</p>
+            {% if request.user.is_superuser or request.user.is_staff %}
+            <a href="{% url 'saving_home' %}">
+                <button class="btn btn-outline-success">Manage</button>
+            </a>
+            {% endif %}
+        </div>
+    </div>  
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total Loan</h4>
+            <p class="fs-3 fw-bold">Rs. {{total_deployed}}</p>
+            <p>Total loan deployed from previous year: Rs. {{deployed_previous_year}}</p>
+            <p>Total loan deployed of current year: Rs. {{deployed_current_year}}</p>
+            {% if request.user.is_superuser or request.user.is_staff %}
+            <a href="{% url 'loan_home' %}">
+                <button class="btn btn-outline-success">Manage</button>
+            </a>
+            {% endif %}
+        </div>
+    </div>  
+</div>
+
+
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total Share</h4>
+            <p class="fs-3 fw-bold">Rs. {{total_shares}}</p>
+            <p>Total shares from previous year: Rs. {{current_year_shares}}</p>
+            <p>Total shares of current year: Rs. {{previous_year_shares}}</p>
+            {% if request.user.is_superuser or request.user.is_staff %}
+            <a href="{% url 'share_home' %}">
+                <button class="btn btn-outline-success">Manage</button>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total Expenses</h4>
+            <p class="fs-3 fw-bold">Rs. {{total_expenses}}</p>
+            <p>Total expenses from previous year: Rs. {{current_year_expenses}}</p>
+            <p>Total expenses of current year: Rs. {{previous_year_expenses}}</p>
+            {% if request.user.is_superuser or request.user.is_staff %}
+            <a href="{% url 'expenses_home' %}">
+                <button class="btn btn-outline-success">Manage</button>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<h2 class="p-3">Balance</h2>
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total amount on bank</h4>
+            <p class="fs-3 fw-bold">Rs. {{balance_now}}</p>
+            
+        </div>
+    </div>
+</div>
+
+<h2 class="p-3">Members</h2>
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total members</h4>
+            <p class="fs-3 fw-bold">{{total_members}}</p>
+            <a href="{% url 'customer_home' %}">
+                <button class="btn btn-outline-success">Manage</button>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">1</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&larr;</a>
+            </li>
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link">{{ page_obj.number }}</span>
+        </li>
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">&rarr;</a>
+            </li>
+        {% endif %}
+
+        {% if page_obj.paginator.num_pages > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+<style>
+.transaction-card {
+    height: 100%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+</style>
 
 {% endblock content %}

@@ -6,6 +6,29 @@ Transaction
 {% endblock title %}
 
 {% block content %}
+<h1 class="m-4 text-center text-primary">Sahakari Sahayatri</h1>
+
+<h2 class="p-3">Graphs</h2>
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Saving</h4>
+            <p class="fs-3 fw-bold">--</p>
+            <a href="{% url 'saving_home' %}">
+                <button class="btn btn-outline-success">Manage</button>
+            </a>
+        </div>
+    </div>  
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Loan</h4>
+            <p class="fs-3 fw-bold">--</p>
+            <a href="{% url 'saving_home' %}">
+                <button class="btn btn-outline-success">Manage</button>
+            </a>
+        </div>
+    </div>  
+</div>
 
 <h2 class="p-3">Transaction</h2>
 <div class="row justify-content-center m-3">
@@ -33,6 +56,7 @@ Transaction
     </div>  
 </div>
 
+
 <div class="row justify-content-center m-3">
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
@@ -45,15 +69,13 @@ Transaction
             </a>
         </div>
     </div>
-</div>
-
-<h2 class="p-3">Members</h2>
-<div class="row justify-content-center m-3">
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
-            <h4>Total members</h4>
-            <p class="fs-3 fw-bold">{{total_members}}</p>
-            <a href="{% url 'customer_home' %}">
+            <h4>Total Expenses</h4>
+            <p class="fs-3 fw-bold">Rs. {{total_expenses}}</p>
+            <p>Total expenses from previous year: Rs. {{current_year_expenses}}</p>
+            <p>Total expenses of current year: Rs. {{previous_year_expenses}}</p>
+            <a href="{% url 'expenses_home' %}">
                 <button class="btn btn-outline-success">Manage</button>
             </a>
         </div>
@@ -71,26 +93,17 @@ Transaction
     </div>
 </div>
 
-<h2 class="p-3">Graphs</h2>
+<h2 class="p-3">Members</h2>
 <div class="row justify-content-center m-3">
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
-            <h4>Saving</h4>
-            <p class="fs-3 fw-bold">--</p>
-            <a href="{% url 'saving_home' %}">
+            <h4>Total members</h4>
+            <p class="fs-3 fw-bold">{{total_members}}</p>
+            <a href="{% url 'customer_home' %}">
                 <button class="btn btn-outline-success">Manage</button>
             </a>
         </div>
-    </div>  
-    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-        <div class="card transaction-card text-center p-3">
-            <h4>Loan</h4>
-            <p class="fs-3 fw-bold">--</p>
-            <a href="{% url 'saving_home' %}">
-                <button class="btn btn-outline-success">Manage</button>
-            </a>
-        </div>
-    </div>  
+    </div>
 </div>
 
 <!-- Pagination -->

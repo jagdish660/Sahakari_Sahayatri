@@ -1,21 +1,54 @@
 {% extends "base.html" %}
 
 {% block title %}
-Yearly Interest Summary: {{ member.name }}
+Saving Interest:
 {% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h3>Yearly Interest Summary for ({{ member.member_id }}) - {{ member.name }}</h3>
+    <h3 class="mb-4 text-center text-primary">Saving Interest Summary</h3>
 
-    <div class="card p-3 mb-4">
-        <p><strong>Member ID:</strong> {{ member.member_id }}</p>
-        <p><strong>Name:</strong> {{ member.name }}</p>
-        <p><strong>Address:</strong> {{ member.address }}</p>
-        <p><strong>Occupation:</strong> {{ member.occupation }}</p>
-        <p><strong>Date of Birth:</strong> {{ member.date_of_birth }}</p>
+<!-- Button Collapsible -->
+<div class="mb-2">
+    <a href="" id="collapsible" class="btn btn-sm btn-info m-2">Add Saving Interest</a>
+</div>
+
+
+
+<!-- Background Blur Overlay -->
+<div id="overlay-blur"></div>
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<!-- Collapsible form -->
+<div class="form-divv">
+    <div class="mb-2 form-div">
+        <form action="{% url 'saving_interest' %}" method="post" class="form-member">
+            {% csrf_token %}
+            <div class="mb-2">
+                <label for="previous_rate">Previous Rate</label>
+                <input type="number" step="0.1" min="0" max="25" name="previous_rate" id="previous_rate" class="form-control">
+            </div>
+            <div class="mb-2">
+                <label for="current_rate">Current Rate</label>
+                <input type="number" step="0.1" min="0" max="25" name="current_rate" id="current_rate" class="form-control">
+            </div>
+            <div class="button-container">
+                <button type="submit" class="btn btn-md btn-primary">Add</button>
+            </div>    
+        </form>
     </div>
+</div>
 
+
+    <div>
+        <a href=""></a>
+    </div>
     <table class="table table-bordered table-striped table-hover text-center table-success">
         <thead class="thead-dark">
             <tr>
@@ -45,5 +78,103 @@ Yearly Interest Summary: {{ member.name }}
         </tbody>
     </table>
 </div>
+
+
+<!-- Script for toggling form and blur -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toggleBtn = document.getElementById("collapsible");
+        const formDiv = document.querySelector(".form-divv");
+        const overlay = document.getElementById("overlay-blur");
+
+        function disableAllButtonsExceptForm() {
+            document.querySelectorAll("button").forEach(btn => {
+                if (!formDiv.contains(btn)) {
+                    btn.disabled = true;
+                }
+            });
+        }
+
+        function enableAllButtons() {
+            document.querySelectorAll("button").forEach(btn => {
+                btn.disabled = false;
+            });
+        }
+
+        toggleBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            const isFormVisible = formDiv.style.display === "block";
+            formDiv.style.display = isFormVisible ? "none" : "block";
+            overlay.style.display = isFormVisible ? "none" : "block";
+
+            if (!isFormVisible) {
+                disableAllButtonsExceptForm();
+            } else {
+                enableAllButtons();
+            }
+        });
+
+        document.addEventListener("click", function (e) {
+            if (formDiv.style.display === "block" &&
+                !formDiv.contains(e.target) &&
+                e.target !== toggleBtn) {
+                formDiv.style.display = "none";
+                overlay.style.display = "none";
+                enableAllButtons();
+            }
+        });
+    });
+</script>
+
+<!-- Styles for form and blur -->
+<style>
+    .saving-card {
+        height: 275px;
+        width: fit-content;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+    }
+
+    .form-divv {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 325px;
+        background-color: rgb(240, 238, 238);
+        border: 2px solid #dc3545;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.15);
+        padding: 20px;
+        z-index: 1050;
+        display: none;
+    }
+
+    #overlay-blur {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(5px);
+        background-color: rgba(0, 0, 0, 0.2);
+        z-index: 1040;
+        display: none;
+    }
+
+    button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    body.no-scroll {
+        overflow: hidden;
+    }
+</style>
+
 {% endblock %}
 

@@ -74,10 +74,13 @@ Loan History
                     <td>Rs. {{ loan.amount }}</td>
                     <td>Rs. {{ loan.remaining_principal }}</td>
                     {% if loan.status == "active" %}
-                        <td><button  class="btn-sm btn-success">Active</pb></td>
+                        <td>
+                            <button class="btn btn-sm btn-success" disabled>Active</button>
+                        </td>
                     {% else %}
                         <td>
-                        <button class="btn-sm btn-danger">Closed</button></td>
+                            <button class="btn btn-sm btn-danger" disabled>Closed</button>
+                        </td>
                     {% endif %}
                     <td>
                         <a href="{% url 'loan_details' loan.id %}" class="btn btn-sm btn-outline-primary m-1">View</a>

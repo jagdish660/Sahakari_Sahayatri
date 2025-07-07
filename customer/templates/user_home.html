@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+{% load json_script %}
+
+{% block title %}
+Transaction
+{% endblock title %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock scripts %}
+
+{% block content %}
+<h1 class="m-4 text-center text-primary">Sahakari Sahayatri</h1>
+
+<!-- Embed JSON data safely -->
+{{ fiscal_years|json_script:"fiscalYearsData" }}
+{{ fiscal_savings_values|json_script:"fiscalSavingsValuesData" }}
+{{ fiscal_interest_values|json_script:"fiscalInterestValuesData" }}
+
+<canvas id="fiscalSavingsChart" width="200" height="100"></canvas>
+<script>
+    // Parse the JSON data safely embedded in script tags
+    const fiscalYears = JSON.parse(document.getElementById('fiscalYearsData').textContent);
+    const fiscalSavingsValues = JSON.parse(document.getElementById('fiscalSavingsValuesData').textContent);
+    const fiscalInterestValues = JSON.parse(document.getElementById('fiscalInterestValuesData').textContent);
+
+    const ctx = document.getElementById('fiscalSavingsChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: fiscalYears,
+            datasets: [
+                {
+                    label: 'Total Savings',
+                    data: fiscalSavingsValues,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Total Interest',
+                    data: fiscalInterestValues,
+                    backgroundColor: 'rgba(255, 206, 86, 0.7)',
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Amount in NPR'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Fiscal Year'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Savings and Interest by Fiscal Year'
+                }
+            }
+        }
+    });
+</script>
+
+<h2 class="p-3">Graphs</h2>
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Saving</h4>
+            <p class="fs-3 fw-bold">--</p>
+        </div>
+    </div>  
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Loan</h4>
+            <p class="fs-3 fw-bold">--</p>
+        </div>
+    </div>  
+</div>
+
+<h2 class="p-3">Transaction Summary</h2>
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total Saving (with interest)</h4>
+            <p class="fs-3 fw-bold">Rs. {{ total_savings }}</p>
+            <p>Current year savings: Rs. {{ current_year_savings }}</p>
+            <p>Previous year savings: Rs. {{ previous_year_savings }}</p>
+        </div>
+    </div>  
+</div>
+
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            {% if active_loans %}
+                <h4>Total Loan</h4>
+                {% for loan in active_loans %}
+                    <p class="fs-3 fw-bold">Rs. {{ loan.amount }}</p>    
+                    <p>Remaining principal: Rs. {{ loan.remaining_principal }}</p>
+                    <p>Interest Rate: {{ loan.interest_rate }}%</p>
+                {% endfor %}
+            {% else %}
+                <p class="fs-3 fw-bold">No active loans.</p>
+            {% endif %} 
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total Share</h4>
+            <p class="fs-3 fw-bold">Rs. {{ total_shares }}</p>
+            <p>Current year shares: Rs. {{ current_year_shares }}</p>
+            <p>Previous year shares: Rs. {{ previous_year_shares }}</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.transaction-card {
+    height: 100%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+</style>
+
+{% endblock content %}

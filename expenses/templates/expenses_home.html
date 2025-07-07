@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  Expenses
+{% endblock title %}
+
+{% block content %}
+  <h1 class="mb-4 text-center text-primary">Expenses Dashboard</h1>
+
+  <!-- Total by Field Section -->
+  <div class="card m-3 shadow-sm">
+    <div class="card-header bg-success text-white">
+      <h4 class="mb-0">Total by Field</h4>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-responsive table-striped table-hover table-success text-center">
+        <thead class="table-dark">
+          <tr>
+            <th>S.N.</th>
+            <th>Category</th>
+            <th>Total Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for field in field_totals %}
+            <tr>
+                <td>{{forloop.counter}}.</td>
+                <td>{{ field.category }}</td>
+                <td>{{ field.total }}</td>
+                <td><a href="{% url 'expenses_details' field.category|lower %}" class="btn btn-sm btn-outline-primary">View</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<div class="m-3">
+        <button class="btn btn-md btn-success" data-bs-toggle="modal" data-bs-target="#addExpenseModal">Add Expenses</button>
+
+    </div>
+
+  <!-- All Expenses Section -->
+  <div class="card shadow-sm m-3">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">All Expenses</h4>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-responsive table-striped table-hover table-info text-center">
+        <thead class="table-secondary">
+          <tr>
+            <th>S.N.</th>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for expense in expenses %}
+            <tr>
+                <td>{{forloop.counter}}.</td>
+              <td>{{ expense.date }}</td>
+              <td>{{ expense.category_label }}</td>
+              <td>{{ expense.amount }}</td>
+              <td>{{ expense.remarks }}</td>
+            </tr>
+          {% endfor %}
+          <tr class="fw-bold">
+            <td colspan="3">Total Expenses</td>
+            <td>{{total_expenses}}</td>
+            <td></td>
+            </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock content %}

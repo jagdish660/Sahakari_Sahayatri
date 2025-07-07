@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'loan',
     'share',
     'customer',
+    'expenses',
     # 'django_extensions',  # Optional: for development tools
 ]
 

@@ -6,10 +6,11 @@ from datetime import date
 from share.models import ShareCapital
 from customer.models import Member, Transaction
 from loan.models import Loan, Repayment
+from expenses.models import Expense, TotalExpense
 from saving.models import Deposit, YearlyInterest, SavingRefund, SavingBalance, OtherFee, get_fiscal_year_starting_shrawan, get_fiscal_year_start_end
 from saving.forms import SavingAddForm
 from django.core.paginator import Paginator
-from django.db.models import Sum
+from django.db.models import Sum, F
 from decimal import Decimal, ROUND_HALF_UP
 
 
@@ -21,12 +22,6 @@ def get_fiscal_year_start():
     else:
         return date(today.year - 1, 7, 16)
 
-
-# /
-@login_required(login_url='loginpage')
-def home(request):
-    
-    return render(request, 'home.html')
 
 
 # /saving/
@@ -76,57 +71,6 @@ def saving_home(request):
         'total_current_saving': total_current_saving,
         'page_obj': page_obj
     })
-
-
-# /
-@login_required(login_url='loginpage')
-def transactions(request):
-    loans = Loan.objects.select_related('customer').all().order_by('-id')
-    savings = Deposit.objects.select_related('customer').all().order_by('-date')
-    interest = YearlyInterest.objects.select_related('customer').all().order_by('-date')
-    share_balances = ShareCapital.objects.select_related('customer').all().order_by('-id')
-    members = Member.objects.all()
-    # Calculate totals of Loans
-    total_deployed = sum(loan.amount for loan in loans)
-    current_year = timezone.now().year
-    deployed_current_year = sum(
-        loan.amount for loan in loans if loan.start_date.year == current_year
-    )
-    deployed_previous_year = total_deployed - deployed_current_year
-    # Calculate totals of Savings
-    total_savings = sum(deposit.amount for deposit in savings) + sum(i.previous_interest_amount+i.current_interest_amount for i in interest)
-    current_year_savings = sum(
-        deposit.amount for deposit in savings if deposit.date.year == current_year
-    )
-    previous_year_savings = total_savings - current_year_savings
-    # Calculate totalls for share balance
-    total_shares = sum(balance.share_amount for balance in share_balances)
-    current_year_shares = sum( 
-        balance.share_amount for balance in share_balances if balance.purchase_date.year == current_year
-    )
-    previous_year_shares = total_shares - current_year_shares
-    # Calculate totals of members
-    total_members = members.count()
-    # Calculate balance
-    balance_now = total_savings - total_deployed + total_shares
-    context = {
-        'loans': loans,
-        'total_deployed': total_deployed,
-        'deployed_current_year': deployed_current_year,
-        'deployed_previous_year': deployed_previous_year,
-        'savings': savings,
-        'total_savings': total_savings,
-        'current_year_savings': current_year_savings,
-        'previous_year_savings': previous_year_savings,
-        'share_balances': share_balances,
-        'total_shares': total_shares,
-        'current_year_shares': current_year_shares,
-        'previous_year_shares': previous_year_shares,
-        'total_members': total_members,
-        'members': members,
-        'balance_now': balance_now,
-    }
-    return render(request, 'transactions.html', context)
 
 
 # /saving/<member_id>/
@@ -196,31 +140,8 @@ def saving_details(request, member_id):
     })
 
 
-# /saving/<member_id>/yearly_interest/
-@login_required(login_url='loginpage')
-def saving_yearly_interest(request, member_id):
-    member = get_object_or_404(Member, member_id=member_id)
-    interests = YearlyInterest.objects.filter(customer=member).order_by('year')
-
-    interest_data = []
-    for interest in interests:
-        interest_values = interest.calculate_interest()
-        interest_data.append({
-            'year': interest.year,
-            'pre_balance': interest_values['pre_balance'],
-            'post_balance': interest_values['post_balance'],
-            'pre_interest': interest_values['pre_interest'],
-            'post_interest': interest_values['post_interest'],
-            'total_interest': interest_values['total_interest'],
-        })
-
-    return render(request, 'saving_yearly_interest.html', {
-        'member': member,
-        'interest_data': interest_data
-    })
-
-
 # /saving/interest/ 
+@login_required(login_url='loginpage')
 def saving_interest(request):
     if request.method == 'POST':
         try:
@@ -228,7 +149,7 @@ def saving_interest(request):
             current_rate = Decimal(request.POST.get('current_rate'))
 
             current_date = date.today()
-            fiscal_year = get_fiscal_year_starting_shrawan(current_date)  # e.g., 2025
+            fiscal_year = get_fiscal_year_starting_shrawan(current_date)
             fiscal_year_start_date, fiscal_year_end_date = get_fiscal_year_start_end(fiscal_year)
 
             customers = Member.objects.all()
@@ -236,31 +157,56 @@ def saving_interest(request):
             error_count = 0
 
             for customer in customers:
-                # Check if interest for this fiscal year already exists
                 if not YearlyInterest.objects.filter(customer=customer, year=fiscal_year).exists():
                     try:
-                        # Sum of deposits before fiscal year start
-                        previous_saving = Deposit.objects.filter(
+                        # Sum of deposits BEFORE fiscal year start
+                        prev_deposits = Deposit.objects.filter(
                             customer=customer,
                             date__lt=fiscal_year_start_date
                         ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
 
-                        # Sum of deposits from fiscal year start onwards
-                        current_saving = Deposit.objects.filter(
+                        # Sum of interest credited BEFORE fiscal year start
+                        prev_interests = YearlyInterest.objects.filter(
                             customer=customer,
-                            date__gte=fiscal_year_start_date
+                            date__lt=fiscal_year_start_date
+                        ).aggregate(
+                            total=Sum(F('previous_interest_amount') + F('current_interest_amount'))
+                        )['total'] or Decimal('0.00')
+
+                        previous_saving = prev_deposits + prev_interests
+
+                        # Sum of deposits DURING the fiscal year
+                        curr_deposits = Deposit.objects.filter(
+                            customer=customer,
+                            date__gte=fiscal_year_start_date,
+                            date__lte=fiscal_year_end_date
                         ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
 
-                        # Calculate interest amounts
+                        # Sum of interests DURING the fiscal year
+                        curr_interests = YearlyInterest.objects.filter(
+                            customer=customer,
+                            date__gte=fiscal_year_start_date,
+                            date__lte=fiscal_year_end_date
+                        ).aggregate(
+                            total=Sum(F('previous_interest_amount') + F('current_interest_amount'))
+                        )['total'] or Decimal('0.00')
+
+                        current_saving = curr_deposits + curr_interests
+
+                        # Calculate interest
                         previous_interest = (previous_saving * previous_rate / Decimal('100')).quantize(Decimal('0.01'))
                         current_interest = (current_saving * current_rate / Decimal('100')).quantize(Decimal('0.01'))
+                        interest_total = (previous_interest + current_interest).quantize(Decimal('0.01'))
 
-                        # Update or create saving balance
+                        # Update saving balance
                         balance_obj, _ = SavingBalance.objects.get_or_create(customer=customer)
-                        balance_obj.balance += previous_interest + current_interest
+                        balance_obj.balance += interest_total
                         balance_obj.save()
 
-                        # Create YearlyInterest record
+                        # Log
+                        print(f"{fiscal_year}: {customer.name} - Prev Amt: {previous_saving}, Int: {previous_interest} ({previous_rate}%) | Curr Amt: {current_saving}, Int: {current_interest} ({current_rate}%)")
+
+                        # Save YearlyInterest
                         YearlyInterest.objects.create(
                             customer=customer,
                             year=fiscal_year,
@@ -270,23 +216,23 @@ def saving_interest(request):
                             current_interest_amount=current_interest,
                             remarks=f"Interest for FY {fiscal_year}"
                         )
-                        
+
+                        # Log Transaction
                         Transaction.objects.create(
+                            date=timezone.now(),
                             member=customer,
-                            interest_paid=(current_interest + previous_interest),
+                            amount=interest_total,
+                            saving_balance=balance_obj.balance,  # Updated balance
+                            loan_repayment=0,
+                            interest_paid=interest_total,
+                            share=0,
+                            other_fee=0,
                             payment_method="interest",
                             remarks=f"Interest credited for FY {fiscal_year}",
                         )
 
-                        # Debug prints (can remove or comment out in production)
-                        print(f"Customer: {customer.name}")
-                        print(f"Previous Saving: Rs. {previous_saving}")
-                        print(f"Previous Interest ({previous_rate}%): Rs. {previous_interest}")
-                        print(f"Current Saving: Rs. {current_saving}")
-                        print(f"Current Interest ({current_rate}%): Rs. {current_interest}")
-                        print(f"Updated Balance: Rs. {balance_obj.balance}\n")
-
                         success_count += 1
+
                     except Exception as e:
                         print(f"Error processing {customer.name}: {e}")
                         error_count += 1
@@ -298,10 +244,9 @@ def saving_interest(request):
         except Exception as e:
             messages.error(request, f"Invalid input: {e}")
 
-        return redirect('saving_home')
+        return redirect('saving_interest')
 
-    return render(request, 'saving_home.html')
-
+    return render(request, 'saving_yearly_interest.html')
 
 
 # /saving/add/<int:member_id>/

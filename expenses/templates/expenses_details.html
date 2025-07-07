@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  Expenses
+{% endblock title %}
+
+{% block content %}
+  <h1 class="mb-4 text-center text-primary">Expenses Details - {{category}}</h1>
+
+  <!-- Total by Field Section -->
+  <div class="card m-3 shadow-sm">
+    <div class="card-header bg-success text-white">
+      <h4 class="mb-0">Total by Field</h4>
+    </div>
+    
+{% if category == "interest on saving" %}
+    <div class="card-body p-0">
+      <table class="table table-responsive table-striped table-hover table-success text-center">
+        <thead class="table-dark">
+          <tr>
+            <th>S.N.</th>
+            <th>Date</th>
+            <th>Member</th>
+            <th>Amount</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+  {% for field in expenses %}
+    <tr>
+      <td>{{ forloop.counter }}.</td>
+      <td>{{ field.date }}</td>
+      <td>
+        {% if field.customer %}
+          {{ field.customer.name }}
+        {% else %}
+          N/A
+        {% endif %}
+      </td>
+      <td>
+        {% if field.total_interest %}
+          {{ field.total_interest|floatformat:2 }}
+        {% elif field.amount %}
+          {{ field.amount|floatformat:2 }}
+        {% else %}
+          0.00
+        {% endif %}
+      </td>
+      
+      <td>{{ field.remarks }}</td>
+    </tr>
+  {% endfor %}
+</tbody>
+
+      </table>
+    </div>
+  </div>
+{% else %}
+<div class="card-body p-0">
+      <table class="table table-responsive table-striped table-hover table-success text-center">
+        <thead class="table-dark">
+          <tr>
+            <th>S.N.</th>
+            <th>Date</th>
+            <th>Total Amount</th>
+            <th>Payment Method</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for field in expenses %}
+            <tr>
+                <td>{{forloop.counter}}.</td>
+                <td>{{ field.date }}</td>
+                <td>{{ field.amount }}</td>
+                <td>{{ field.payment_method }}</td>
+                <td>{{ field.remarks }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+{% endif %}
+<div class="button-container"><a class="btn btn-lg btn-danger" href="{% url 'expenses_home' %}">Back</a></div>
+{% endblock content %}

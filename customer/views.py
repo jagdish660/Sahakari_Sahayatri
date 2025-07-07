@@ -7,19 +7,208 @@ from django.http import HttpResponse
 from django.db import IntegrityError
 from django.core.paginator import Paginator
 from customer.models import Member, Transaction
-from saving.models import SavingBalance, Deposit, SavingRefund, YearlyInterest
+from saving.models import SavingBalance, Deposit, SavingRefund, YearlyInterest, get_fiscal_year_starting_shrawan, get_fiscal_year_start_end
 from loan.models import Loan, Repayment
 from share.models import ShareCapital, ShareRefund
+from expenses.models import Expense, TotalExpense
 from customer.forms import MemberForm
 import secrets
 import string
 from decimal import Decimal
 import re
 from django.core.mail import send_mail
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.conf import settings
 
+# Create views here.
 
+# /
+@login_required(login_url='loginpage')
+def home(request):
+    if request.user.is_staff or request.user.is_superuser:
+        # Fetch related data
+        loans = Loan.objects.select_related('customer').all().order_by('-id')
+        savings = Deposit.objects.select_related('customer').all().order_by('-date')
+        interest = YearlyInterest.objects.all().order_by('-date')
+        expenses = Expense.objects.all().order_by('-date')
+        share_balances = ShareCapital.objects.select_related('customer').all().order_by('-id')
+        members = Member.objects.all()
+
+        current_year = timezone.now().year
+
+        # ---- LOANS ----
+        total_deployed = sum(loan.amount for loan in loans)
+        deployed_current_year = sum(loan.amount for loan in loans if loan.start_date.year == current_year)
+        deployed_previous_year = total_deployed - deployed_current_year
+        remaining_principal = sum(loan.remaining_principal for loan in loans if loan.status =='active')
+        # ---- INTEREST ----
+        total_interest = sum(i.previous_interest_amount + i.current_interest_amount for i in interest)
+        current_year_interest = sum(
+            i.current_interest_amount + i.previous_interest_amount
+            for i in interest if i.date.year == current_year
+        )
+        previous_year_interest = total_interest - current_year_interest
+
+        # ---- EXPENSES ----
+        total_expenses_amount = sum(e.amount for e in expenses)
+        current_year_expenses_amount = sum(e.amount for e in expenses if e.date.year == current_year)
+        previous_year_expenses_amount = total_expenses_amount - current_year_expenses_amount
+
+        # Include interest in total expenses
+        total_expenses = total_expenses_amount + total_interest
+        current_year_expenses = current_year_expenses_amount + current_year_interest
+        previous_year_expenses = previous_year_expenses_amount + previous_year_interest
+
+        # ---- SAVINGS ----
+        total_savings = sum(d.amount for d in savings) + total_interest
+        current_year_savings = sum(d.amount for d in savings if d.date.year == current_year) + current_year_interest
+        previous_year_savings = total_savings - current_year_savings
+
+        # ---- SHARES ----
+        total_shares = sum(s.share_amount for s in share_balances)
+        current_year_shares = sum(s.share_amount for s in share_balances if s.purchase_date.year == current_year)
+        previous_year_shares = total_shares - current_year_shares
+
+        # ---- MEMBERS ----
+        total_members = members.count()
+
+        # ---- BALANCE ----
+        principal_paid = total_deployed - remaining_principal
+        balance_now = total_savings - principal_paid + total_shares - total_expenses
+
+        # ---- CONTEXT ----
+        context = {
+            'loans': loans,
+            'total_deployed': total_deployed,
+            'deployed_current_year': deployed_current_year,
+            'deployed_previous_year': deployed_previous_year,
+
+            'expenses': expenses,
+            'total_expenses': total_expenses,
+            'current_year_expenses': current_year_expenses,
+            'previous_year_expenses': previous_year_expenses,
+
+            'savings': savings,
+            'total_savings': total_savings,
+            'current_year_savings': current_year_savings,
+            'previous_year_savings': previous_year_savings,
+
+            'interest': interest,
+            'total_interest': total_interest,
+            'current_year_interest': current_year_interest,
+            'previous_year_interest': previous_year_interest,
+
+            'share_balances': share_balances,
+            'total_shares': total_shares,
+            'current_year_shares': current_year_shares,
+            'previous_year_shares': previous_year_shares,
+
+            'members': members,
+            'total_members': total_members,
+
+            'balance_now': balance_now,
+        }
+        return render(request, 'home.html', context)
+    else:
+        return redirect('user_home')
+
+
+#  /home/
+@login_required(login_url='loginpage')
+def user_home(request):
+    if request.user.is_staff or request.user.is_superuser:
+        return redirect('home')
+    user = request.user
+    member = get_object_or_404(Member, user=user)
+    current_year = timezone.now().year
+    # ---- LOANS ----
+    all_loans = Loan.objects.filter(customer=member).select_related('customer').order_by('-id')
+    active_loans = all_loans.filter(status='active')
+    closed_loans = all_loans.exclude(status='active')
+
+    total_deployed = sum(loan.amount for loan in all_loans)
+    deployed_current_year = sum(loan.amount for loan in all_loans if loan.start_date.year == current_year)
+    deployed_previous_year = total_deployed - deployed_current_year
+    remaining_principal = sum(loan.remaining_principal for loan in active_loans)
+    # ---- INTEREST ----
+    interest = YearlyInterest.objects.filter(customer=member).order_by('-date')
+    total_interest = sum(i.previous_interest_amount + i.current_interest_amount for i in interest)
+    current_year_interest = sum(
+        i.current_interest_amount + i.previous_interest_amount
+        for i in interest if i.date.year == current_year
+    )
+    previous_year_interest = total_interest - current_year_interest
+    # ---- SAVINGS ----
+    savings = Deposit.objects.filter(customer=member).exclude(payment_method='Auto').order_by('-date')
+    # Add interest to total savings
+    total_savings = sum(d.amount for d in savings) + total_interest
+    current_year_savings = sum(d.amount for d in savings if d.date.year == current_year)
+    previous_year_savings = total_savings - current_year_savings
+    # current_year_savings += current_year_interest
+    previous_year_savings += previous_year_interest
+    # ---- SHARES ----
+    share_balances = ShareCapital.objects.filter(customer=member).select_related('customer').order_by('-id')
+    total_shares = sum(s.share_amount for s in share_balances)
+    current_year_shares = sum(s.share_amount for s in share_balances if s.purchase_date.year == current_year)
+    previous_year_shares = total_shares - current_year_shares
+    # ---- BALANCE ----
+    principal_paid = total_deployed - remaining_principal
+    balance_now = total_savings - principal_paid + total_shares
+
+    from collections import defaultdict
+    # --- Fiscal Year BUNDLE CALCULATION ---
+    # 1. Bundle savings by fiscal year
+    fiscal_savings = defaultdict(Decimal)
+    for deposit in savings:
+        fy = get_fiscal_year_starting_shrawan(deposit.date)
+        fiscal_savings[fy] += deposit.amount
+    # 2. Bundle interest by fiscal year
+    fiscal_interest = defaultdict(Decimal)
+    for i in interest:
+        fy = i.year
+        fiscal_interest[fy] += i.previous_interest_amount + i.current_interest_amount
+    # Sort by year for consistency
+    sorted_years = sorted(set(list(fiscal_savings.keys()) + list(fiscal_interest.keys())))
+    fiscal_years = []
+    fiscal_savings_values = []
+    fiscal_interest_values = []
+    for year in sorted_years:
+        fiscal_years.append(f"FY {year}")
+        fiscal_savings_values.append(float(fiscal_savings.get(year, 0)))
+        fiscal_interest_values.append(float(fiscal_interest.get(year, 0)))
+    # ---- CONTEXT ----
+    context = {
+        'active_loans': active_loans,
+        'closed_loans': closed_loans,
+        'total_deployed': total_deployed,
+        'deployed_current_year': deployed_current_year,
+        'deployed_previous_year': deployed_previous_year,
+
+        'savings': savings,
+        'total_savings': total_savings,
+        'current_year_savings': current_year_savings,
+        'previous_year_savings': previous_year_savings,
+
+        'interest': interest,
+        'total_interest': total_interest,
+        'current_year_interest': current_year_interest,
+        'previous_year_interest': previous_year_interest,
+
+        'share_balances': share_balances,
+        'total_shares': total_shares,
+        'current_year_shares': current_year_shares,
+        'previous_year_shares': previous_year_shares,
+
+        'balance_now': balance_now,
+        
+        'fiscal_years': fiscal_years,
+        'fiscal_savings_values': fiscal_savings_values,
+        'fiscal_interest_values': fiscal_interest_values,
+    }
+    return render(request, 'user_home.html', context)
+ 
+ 
 #  /member
 @login_required(login_url='loginpage')
 def member_home(request ):
@@ -28,6 +217,7 @@ def member_home(request ):
         return render(request, 'customer_home.html', {'customers': customers})
     else:
         messages.error(request, "You're not allowed to enter this page.")
+        return redirect('user_home')
     
 
 #  /member/details/<int:member_id>
@@ -516,9 +706,9 @@ def loginpage(request):
                 login(request, user)
                 messages.success(request, "You have successfully logged in.")
                 if request.user.is_staff or request.user.is_superuser:
-                    return redirect('transactions')
-                else:
                     return redirect('home')
+                else:
+                    return redirect('user_home')
             else:
                 messages.error(request, "Invalid username or password.")
     if request.user.is_authenticated:
