@@ -17,54 +17,56 @@ Saving details : {{ member.name }}
         <p>Citizenship No. : {{ member.citizenship_number }}</p>
     </div>
 
-    <table class="table table-bordered text-center table-responsive table-striped table-hover table-success">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Previous Balance</th>
-                <th>Saving</th>
-                <th>Refund</th>
-                <th>Interest</th>
-                <th>Balance</th>
-                <th>Method</th>
-                <th>Remarks</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for tx in page_obj %}
-                    <tr>
-                        <td>{{ tx.date }}</td>
-                        <td>Rs {{ tx.previous_balance }}</td>
-                        <td>
-                            {% if tx.type == "Deposit" %}
-                                Rs {{ tx.amount }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if tx.type == "Refund" %}
-                                Rs {{ tx.amount }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if tx.type == "Interest" %}
-                                Rs {{ tx.amount }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td>Rs {{ tx.balance }}</td>
-                        <td>{{ tx.payment_method }}</td>
-                        <td>{{tx.remarks}}</td>
-                    </tr>
-                
-            {% endfor %}
-        </tbody>
-        
-    </table>
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered text-center table-striped table-hover table-success">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Previous Balance</th>
+                    <th>Saving</th>
+                    <th>Refund</th>
+                    <th>Interest</th>
+                    <th>Balance</th>
+                    <th>Method</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in page_obj %}
+                        <tr>
+                            <td>{{ tx.date }}</td>
+                            <td>Rs {{ tx.previous_balance }}</td>
+                            <td>
+                                {% if tx.type == "Deposit" %}
+                                    Rs {{ tx.amount }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if tx.type == "Refund" %}
+                                    Rs {{ tx.amount }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if tx.type == "Interest" %}
+                                    Rs {{ tx.amount }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>Rs {{ tx.balance }}</td>
+                            <td>{{ tx.payment_method }}</td>
+                            <td>{{tx.remarks}}</td>
+                        </tr>
+                    
+                {% endfor %}
+            </tbody>
+            
+        </table>
+    </div>
     <!-- Pagination -->
     <nav aria-label="Page navigation">
         <ul class="pagination justify-content-center">

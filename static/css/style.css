@@ -1153,6 +1153,10 @@ body {
         font-size: 1rem;
         padding: .75rem 2rem;
     }
+
+    .transaction-card canvas {
+        max-height: 300px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -1217,6 +1221,9 @@ body {
         height:35%;
         width:100%;
     }
+    .transaction-card canvas {
+        max-height: 250px;
+    }
 }
 
 /* Mobile-specific styles */
@@ -1264,13 +1271,58 @@ body {
 
 .dropdown-submenu > .dropdown-menu {
   top: 0;
-  left: 90%;
-  margin-top: -1px;
+  left: 100%;
+  margin-top: 0;
   display: none;
   position: absolute;
-  border: 1px solidrgb(82, 81, 81);
+  min-width: 180px;
+  border: 1px solid rgba(82, 81, 81, 0.3);
+  z-index: 1000;
 }
 
 .dropdown-submenu:hover > .dropdown-menu {
   display: block;
 }
+
+/* 👇 Responsive Fix for Smaller Screens */
+@media (max-width: 991.98px) {
+  .dropdown-submenu > .dropdown-menu {
+    position: relative;
+    left: 0;
+    top: 0;
+    display: none;
+    margin-left: 1rem;
+  }
+
+  .dropdown-submenu > .dropdown-toggle::after {
+    float: right;
+    margin-top: 0.2rem;
+  }
+
+  .dropdown-submenu.show > .dropdown-menu {
+    display: block;
+  }
+}
+
+
+.transaction-card {
+    height: 100%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 1rem;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+
+.transaction-card canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 400px;
+    display: block;
+}
+
+
+
+
+

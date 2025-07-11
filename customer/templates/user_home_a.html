@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Transaction
+{% endblock title %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock scripts %}
+
+{% block content %}
+<h1 class="m-4 text-center text-primary">Sahakari Sahayatri</h1>
+
+<!-- Embed JSON data safely -->
+{{ fiscal_years|json_script:"fiscalYearsData" }}
+{{ fiscal_savings_values|json_script:"fiscalSavingsValuesData" }}
+{{ fiscal_interest_values|json_script:"fiscalInterestValuesData" }}
+{{ fiscal_loan_values|json_script:"fiscalLoanValuesData" }}
+{{ fiscal_remaining_balance_values|json_script:"fiscalRemainingBalanceData" }}
+
+<h2 class="p-3">Graphs</h2>
+<div class="row justify-content-center m-3">
+    <div class="col-lg-5 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Savings and Interest</h4>
+            <canvas id="fiscalSavingsChart" width="400" height="250"></canvas>
+        </div>
+    </div>  
+    <div class="col-lg-5 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Loan and Remaining Balance</h4>
+            <canvas id="fiscalLoanChart" width="400" height="250"></canvas> 
+        </div>
+    </div>  
+</div>
+
+<h2 class="p-3">Transaction Summary</h2>
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total Saving (with interest)</h4>
+            <p class="fs-3 fw-bold">Rs. {{ total_savings }}</p>
+            <p>Current year savings: Rs. {{ current_year_savings }}</p>
+            <p>Previous year savings: Rs. {{ previous_year_savings }}</p>
+        </div>
+    </div>  
+</div>
+
+<div class="row justify-content-center m-3">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            {% if active_loans %}
+                <h4>Active Loans</h4>
+                {% for loan in active_loans %}
+                    <p class="fs-5 fw-semibold">Loan Amount: Rs. {{ loan.amount }}</p>    
+                    <p>Remaining Principal: Rs. {{ loan.remaining_principal }}</p>
+                    <p>Interest Rate: {{ loan.interest_rate }}%</p>
+                    <hr>
+                {% endfor %}
+            {% else %}
+                <p class="fs-5 fw-bold">No active loans.</p>
+            {% endif %} 
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="card transaction-card text-center p-3">
+            <h4>Total Shares</h4>
+            <p class="fs-3 fw-bold">Rs. {{ total_shares }}</p>
+            <p>Current year shares: Rs. {{ current_year_shares }}</p>
+            <p>Previous year shares: Rs. {{ previous_year_shares }}</p>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    // Parse JSON data safely
+    const fiscalYears = JSON.parse(document.getElementById('fiscalYearsData').textContent);
+    const fiscalSavings = JSON.parse(document.getElementById('fiscalSavingsValuesData').textContent);
+    const fiscalInterest = JSON.parse(document.getElementById('fiscalInterestValuesData').textContent);
+    const fiscalLoans = JSON.parse(document.getElementById('fiscalLoanValuesData').textContent);
+    const fiscalRemainingBalance = JSON.parse(document.getElementById('fiscalRemainingBalanceData').textContent);
+
+    // Chart 1: Savings and Interest (Line Chart)
+    const ctxSavings = document.getElementById('fiscalSavingsChart').getContext('2d');
+    const savingsChart = new Chart(ctxSavings, {
+        type: 'line',
+        data: {
+            labels: fiscalYears,
+            datasets: [
+                {
+                    label: 'Savings',
+                    data: fiscalSavings,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                },
+                {
+                    label: 'Interest',
+                    data: fiscalInterest,
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'nearest',
+                intersect: false
+            },
+            plugins: {
+                legend: { display: true, position: 'top' },
+                title: { display: true, text: 'Fiscal Year Savings and Interest' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Amount (Rs.)' }
+                }
+            }
+        }
+    });
+
+    // Chart 2: Loan and Remaining Balance (Bar Chart)
+    const ctxLoan = document.getElementById('fiscalLoanChart').getContext('2d');
+    const loanChart = new Chart(ctxLoan, {
+    type: 'line',
+    data: {
+        labels: fiscalYears,
+        datasets: [
+            {
+                label: 'Loan Amount',
+                data: fiscalLoans,
+                backgroundColor: 'rgba(215, 184, 195, 0.7)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                fill: true,
+                tension: 0.4,
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: true, position: 'top' },
+            title: { display: true, text: 'Fiscal Year Loan Amount and Remaining Balance' }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Amount (Rs.)' }
+            }
+        }
+    }
+});
+
+</script>
+{% endblock content %}

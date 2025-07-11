@@ -46,37 +46,36 @@ Saving Interest:
 </div>
 
 
-    <div>
-        <a href=""></a>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover text-center table-success">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Fiscal Year</th>
+                    <th>Pre Balance (Rs)</th>
+                    <th>Post Balance (Rs)</th>
+                    <th>Previous Interest (Rs)</th>
+                    <th>Current Interest (Rs)</th>
+                    <th>Total Interest (Rs)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for interest in interest_data %}
+                <tr>
+                    <td>{{ interest.year }}</td>
+                    <td>Rs {{ interest.pre_balance }}</td>
+                    <td>Rs {{ interest.post_balance }}</td>
+                    <td>Rs {{ interest.pre_interest }}</td>
+                    <td>Rs {{ interest.post_interest }}</td>
+                    <td><strong>Rs {{ interest.total_interest }}</strong></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No interest data available for this member.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    <table class="table table-bordered table-striped table-hover text-center table-success">
-        <thead class="thead-dark">
-            <tr>
-                <th>Fiscal Year</th>
-                <th>Pre Balance (Rs)</th>
-                <th>Post Balance (Rs)</th>
-                <th>Previous Interest (Rs)</th>
-                <th>Current Interest (Rs)</th>
-                <th>Total Interest (Rs)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for interest in interest_data %}
-            <tr>
-                <td>{{ interest.year }}</td>
-                <td>Rs {{ interest.pre_balance }}</td>
-                <td>Rs {{ interest.post_balance }}</td>
-                <td>Rs {{ interest.pre_interest }}</td>
-                <td>Rs {{ interest.post_interest }}</td>
-                <td><strong>Rs {{ interest.total_interest }}</strong></td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6">No interest data available for this member.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
 
 

@@ -7,6 +7,7 @@ from decimal import Decimal
 from expenses.models import Expense, EXPENSE_CATEGORIES, TotalExpense
 from saving.models import YearlyInterest
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
 CATEGORY_LABELS = dict(EXPENSE_CATEGORIES)
 # Crrate your views here.
@@ -62,8 +63,12 @@ def expenses_home(request):
         {'category': CATEGORY_LABELS.get(category, category), 'total': totals}
         for category, totals in totals.items()
     ]
+    paginator = Paginator(combined_expenses, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         'expenses': combined_expenses,
+        'page_obj': page_obj,
         'field_totals': field_totals,
         'total_yearly_interest': next(
             (item['total'] for item in field_totals if item['category'] == CATEGORY_LABELS.get('interest_saving', 'Interest')),
@@ -134,11 +139,13 @@ def expenses_add(request):
 def expenses_details(request, category):
     if request.user.is_superuser or request.user.is_staff:
         if category == "interest on saving":
-            expenses = YearlyInterest.objects.all().order_by('-date')
-            for exp in expenses:
+            expenses_qs = YearlyInterest.objects.all().order_by('-date')
+            expenses = []
+            for exp in expenses_qs:
                 prev = getattr(exp, 'previous_interest_amount', Decimal('0.00')) or Decimal('0.00')
                 curr = getattr(exp, 'current_interest_amount', Decimal('0.00')) or Decimal('0.00')
                 exp.total_interest = prev + curr
+                expenses.append(exp)  # Append modified object
         else:
             category = category.lower()
             if category not in CATEGORY_TOTAL_FIELD_MAP:
@@ -149,16 +156,19 @@ def expenses_details(request, category):
                 messages.error(request, "No details found for this category.")
                 return redirect('expenses_home')
         
-            # total_amount = expenses.aggregate(Sum('amount'))['amount_sum'] or Decimal('0.00')
+        paginator = Paginator(expenses,10)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
         context = {
-                'expenses': expenses,
-                
-                'category': CATEGORY_LABELS.get(category, category),
-                # 'total_amount': total_amount
-            }
+            'expenses': expenses,
+            'page_obj': page_obj,
+            'category': CATEGORY_LABELS.get(category, category),
+        }
         return render(request, 'expenses_details.html', context)
+    
     else:
         messages.error(request, "You're not allowed to perform this task.")
         return redirect('home')
-    
+   
     

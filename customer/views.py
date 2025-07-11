@@ -20,14 +20,20 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.conf import settings
+from collections import defaultdict
 
 # Create views here.
 
 # /
+from collections import defaultdict
+from decimal import Decimal
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
+
 @login_required(login_url='loginpage')
 def home(request):
     if request.user.is_staff or request.user.is_superuser:
-        # Fetch related data
         loans = Loan.objects.select_related('customer').all().order_by('-id')
         savings = Deposit.objects.select_related('customer').all().order_by('-date')
         interest = YearlyInterest.objects.all().order_by('-date')
@@ -35,14 +41,43 @@ def home(request):
         share_balances = ShareCapital.objects.select_related('customer').all().order_by('-id')
         members = Member.objects.all()
 
-        current_year = timezone.now().year
+        current_year = now().year
 
-        # ---- LOANS ----
+        # Initialize dicts once outside loops
+        yearly_savings = defaultdict(Decimal)
+        yearly_interest = defaultdict(Decimal)
+        yearly_loans_deployed = defaultdict(Decimal)
+        yearly_remaining_loan = defaultdict(Decimal)
+
+        for d in savings:
+            yearly_savings[d.date.year] += d.amount
+
+        for i in interest:
+            yearly_interest[i.date.year] += i.previous_interest_amount + i.current_interest_amount
+
+        for l in loans:
+            yearly_loans_deployed[l.start_date.year] += l.amount
+            if l.status == 'active':
+                yearly_remaining_loan[l.start_date.year] += l.remaining_principal
+
+        years = sorted(set(
+            list(yearly_savings.keys()) +
+            list(yearly_interest.keys()) +
+            list(yearly_loans_deployed.keys()) +
+            list(yearly_remaining_loan.keys())
+        ))
+
+        savings_list = [float(yearly_savings[y]) for y in years]
+        interest_list = [float(yearly_interest[y]) for y in years]
+        loans_list = [float(yearly_loans_deployed[y]) for y in years]
+        remaining_loan_list = [float(yearly_remaining_loan[y]) for y in years]
+
         total_deployed = sum(loan.amount for loan in loans)
         deployed_current_year = sum(loan.amount for loan in loans if loan.start_date.year == current_year)
         deployed_previous_year = total_deployed - deployed_current_year
-        remaining_principal = sum(loan.remaining_principal for loan in loans if loan.status =='active')
-        # ---- INTEREST ----
+
+        remaining_principal = sum(loan.remaining_principal for loan in loans if loan.status == 'active')
+
         total_interest = sum(i.previous_interest_amount + i.current_interest_amount for i in interest)
         current_year_interest = sum(
             i.current_interest_amount + i.previous_interest_amount
@@ -50,34 +85,37 @@ def home(request):
         )
         previous_year_interest = total_interest - current_year_interest
 
-        # ---- EXPENSES ----
         total_expenses_amount = sum(e.amount for e in expenses)
         current_year_expenses_amount = sum(e.amount for e in expenses if e.date.year == current_year)
         previous_year_expenses_amount = total_expenses_amount - current_year_expenses_amount
 
-        # Include interest in total expenses
         total_expenses = total_expenses_amount + total_interest
         current_year_expenses = current_year_expenses_amount + current_year_interest
         previous_year_expenses = previous_year_expenses_amount + previous_year_interest
 
-        # ---- SAVINGS ----
         total_savings = sum(d.amount for d in savings) + total_interest
         current_year_savings = sum(d.amount for d in savings if d.date.year == current_year) + current_year_interest
         previous_year_savings = total_savings - current_year_savings
 
-        # ---- SHARES ----
         total_shares = sum(s.share_amount for s in share_balances)
         current_year_shares = sum(s.share_amount for s in share_balances if s.purchase_date.year == current_year)
         previous_year_shares = total_shares - current_year_shares
 
-        # ---- MEMBERS ----
         total_members = members.count()
-
-        # ---- BALANCE ----
         principal_paid = total_deployed - remaining_principal
         balance_now = total_savings - principal_paid + total_shares - total_expenses
 
-        # ---- CONTEXT ----
+        # Prepare JSON serializable data for Chart.js
+        yearly_data = []
+        for y in years:
+            yearly_data.append({
+                'year': y,
+                'savings': float(yearly_savings[y]),
+                'interest': float(yearly_interest[y]),
+                'loan_deployed': float(yearly_loans_deployed[y]),
+                'remaining_loan': float(yearly_remaining_loan[y]),
+            })
+
         context = {
             'loans': loans,
             'total_deployed': total_deployed,
@@ -108,10 +146,15 @@ def home(request):
             'total_members': total_members,
 
             'balance_now': balance_now,
+
+            # For Chart.js
+            'yearly_data': yearly_data,
         }
+
         return render(request, 'home.html', context)
     else:
         return redirect('user_home')
+
 
 
 #  /home/
@@ -122,6 +165,7 @@ def user_home(request):
     user = request.user
     member = get_object_or_404(Member, user=user)
     current_year = timezone.now().year
+    
     # ---- LOANS ----
     all_loans = Loan.objects.filter(customer=member).select_related('customer').order_by('-id')
     active_loans = all_loans.filter(status='active')
@@ -131,6 +175,7 @@ def user_home(request):
     deployed_current_year = sum(loan.amount for loan in all_loans if loan.start_date.year == current_year)
     deployed_previous_year = total_deployed - deployed_current_year
     remaining_principal = sum(loan.remaining_principal for loan in active_loans)
+
     # ---- INTEREST ----
     interest = YearlyInterest.objects.filter(customer=member).order_by('-date')
     total_interest = sum(i.previous_interest_amount + i.current_interest_amount for i in interest)
@@ -139,45 +184,63 @@ def user_home(request):
         for i in interest if i.date.year == current_year
     )
     previous_year_interest = total_interest - current_year_interest
+
     # ---- SAVINGS ----
     savings = Deposit.objects.filter(customer=member).exclude(payment_method='Auto').order_by('-date')
-    # Add interest to total savings
     total_savings = sum(d.amount for d in savings) + total_interest
     current_year_savings = sum(d.amount for d in savings if d.date.year == current_year)
     previous_year_savings = total_savings - current_year_savings
-    # current_year_savings += current_year_interest
     previous_year_savings += previous_year_interest
+
     # ---- SHARES ----
     share_balances = ShareCapital.objects.filter(customer=member).select_related('customer').order_by('-id')
     total_shares = sum(s.share_amount for s in share_balances)
     current_year_shares = sum(s.share_amount for s in share_balances if s.purchase_date.year == current_year)
     previous_year_shares = total_shares - current_year_shares
+
     # ---- BALANCE ----
     principal_paid = total_deployed - remaining_principal
     balance_now = total_savings - principal_paid + total_shares
 
-    from collections import defaultdict
     # --- Fiscal Year BUNDLE CALCULATION ---
+
+    # Helper function (if not already defined)
+    def get_fiscal_year_starting_shrawan(date_obj):
+        # Example fiscal year calculation based on Nepali calendar starting mid-July (adjust as needed)
+        year = date_obj.year
+        if date_obj.month < 7 or (date_obj.month == 7 and date_obj.day < 17):
+            year -= 1
+        return year
+
     # 1. Bundle savings by fiscal year
     fiscal_savings = defaultdict(Decimal)
     for deposit in savings:
         fy = get_fiscal_year_starting_shrawan(deposit.date)
         fiscal_savings[fy] += deposit.amount
+
     # 2. Bundle interest by fiscal year
     fiscal_interest = defaultdict(Decimal)
     for i in interest:
-        fy = i.year
+        fy = i.date.year  # or use get_fiscal_year_starting_shrawan(i.date) if needed
         fiscal_interest[fy] += i.previous_interest_amount + i.current_interest_amount
-    # Sort by year for consistency
-    sorted_years = sorted(set(list(fiscal_savings.keys()) + list(fiscal_interest.keys())))
-    fiscal_years = []
-    fiscal_savings_values = []
-    fiscal_interest_values = []
-    for year in sorted_years:
-        fiscal_years.append(f"FY {year}")
-        fiscal_savings_values.append(float(fiscal_savings.get(year, 0)))
-        fiscal_interest_values.append(float(fiscal_interest.get(year, 0)))
-    # ---- CONTEXT ----
+
+    # 3. Bundle loan amounts by fiscal year
+    fiscal_loans = defaultdict(Decimal)
+    fiscal_remaining_balances = defaultdict(Decimal)
+    for loan in all_loans:
+        fy = get_fiscal_year_starting_shrawan(loan.start_date)
+        fiscal_loans[fy] += loan.amount
+        fiscal_remaining_balances[fy] += loan.remaining_principal
+
+    # Sort all fiscal years present in any dataset
+    sorted_years = sorted(set(list(fiscal_savings.keys()) + list(fiscal_interest.keys()) + list(fiscal_loans.keys()) + list(fiscal_remaining_balances.keys())))
+
+    fiscal_years = [f"FY {year}" for year in sorted_years]
+    fiscal_savings_values = [float(fiscal_savings.get(year, 0)) for year in sorted_years]
+    fiscal_interest_values = [float(fiscal_interest.get(year, 0)) for year in sorted_years]
+    fiscal_loan_values = [float(fiscal_loans.get(year, 0)) for year in sorted_years]
+    # fiscal_remaining_balance_values = [float(fiscal_remaining_balances.get(year, 0)) for year in sorted_years]
+
     context = {
         'active_loans': active_loans,
         'closed_loans': closed_loans,
@@ -201,20 +264,27 @@ def user_home(request):
         'previous_year_shares': previous_year_shares,
 
         'balance_now': balance_now,
-        
+
         'fiscal_years': fiscal_years,
         'fiscal_savings_values': fiscal_savings_values,
         'fiscal_interest_values': fiscal_interest_values,
+        'fiscal_loan_values': fiscal_loan_values,
+        # 'fiscal_remaining_balance_values': fiscal_remaining_balance_values,
     }
-    return render(request, 'user_home.html', context)
- 
+    return render(request, 'user_home_a.html', context)
+
+
  
 #  /member
 @login_required(login_url='loginpage')
 def member_home(request ):
     if request.user.is_staff or request.user.is_superuser:
         customers = Member.objects.all()
-        return render(request, 'customer_home.html', {'customers': customers})
+        paginator = Paginator(customers,25) 
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        return render(request, 'customer_home.html', {'customers': customers, 'page_obj': page_obj})
     else:
         messages.error(request, "You're not allowed to enter this page.")
         return redirect('user_home')
@@ -342,7 +412,7 @@ def member_details(request, member_id):
 
         total_share = running_share 
 
-        paginator = Paginator(detailed_transactions, 3)
+        paginator = Paginator(detailed_transactions, 10)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         return render(request, 'customer_details.html', {
@@ -708,7 +778,7 @@ def loginpage(request):
                 if request.user.is_staff or request.user.is_superuser:
                     return redirect('home')
                 else:
-                    return redirect('user_home')
+                    return redirect('home')
             else:
                 messages.error(request, "Invalid username or password.")
     if request.user.is_authenticated:

@@ -51,7 +51,7 @@ def loan_home(request):
 def loan_all(request):
     if request.user.is_staff or request.user.is_superuser:
         loans = Loan.objects.select_related('customer').all().order_by('-start_date')
-        paginator = Paginator(loans, 25)
+        paginator = Paginator(loans, 5)
     else:
         try:
             member = Member.objects.get(email=request.user.email)
@@ -78,7 +78,7 @@ def loan_details(request, id):
     repayments = loan.repayments.all().order_by('repayment_date')
 
     # Paginate repayments
-    paginator = Paginator(repayments, 10)  # Show 10 per page
+    paginator = Paginator(repayments, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -198,6 +198,7 @@ def user_loan_all(request, id):
     page_obj = paginator.get_page(page_number)
     context = {
         'loans': loans,
+        'page_obj': page_obj,
         'member':member,
     }
     return render(request, 'user_loan_all.html', context)

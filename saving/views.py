@@ -24,6 +24,7 @@ def get_fiscal_year_start():
 
 
 
+
 # /saving/
 @login_required(login_url='loginpage')
 def saving_home(request):
@@ -71,6 +72,139 @@ def saving_home(request):
         'total_current_saving': total_current_saving,
         'page_obj': page_obj
     })
+
+
+# # /
+# from collections import defaultdict
+# from decimal import Decimal
+# from django.shortcuts import render, redirect
+# from django.contrib.auth.decorators import login_required
+# from django.utils.timezone import now
+
+# @login_required(login_url='loginpage')
+# def home(request):
+#     if request.user.is_staff or request.user.is_superuser:
+#         loans = Loan.objects.select_related('customer').all().order_by('-id')
+#         savings = Deposit.objects.select_related('customer').all().order_by('-date')
+#         interest = YearlyInterest.objects.all().order_by('-date')
+#         expenses = Expense.objects.all().order_by('-date')
+#         share_balances = ShareCapital.objects.select_related('customer').all().order_by('-id')
+#         members = Member.objects.all()
+
+#         current_year = now().year
+
+#         # Initialize dicts once outside loops
+#         yearly_savings = defaultdict(Decimal)
+#         yearly_interest = defaultdict(Decimal)
+#         yearly_loans_deployed = defaultdict(Decimal)
+#         yearly_remaining_loan = defaultdict(Decimal)
+
+#         for d in savings:
+#             yearly_savings[d.date.year] += d.amount
+
+#         for i in interest:
+#             yearly_interest[i.date.year] += i.previous_interest_amount + i.current_interest_amount
+
+#         for l in loans:
+#             yearly_loans_deployed[l.start_date.year] += l.amount
+#             if l.status == 'active':
+#                 yearly_remaining_loan[l.start_date.year] += l.remaining_principal
+
+#         years = sorted(set(
+#             list(yearly_savings.keys()) +
+#             list(yearly_interest.keys()) +
+#             list(yearly_loans_deployed.keys()) +
+#             list(yearly_remaining_loan.keys())
+#         ))
+
+#         savings_list = [float(yearly_savings[y]) for y in years]
+#         interest_list = [float(yearly_interest[y]) for y in years]
+#         loans_list = [float(yearly_loans_deployed[y]) for y in years]
+#         remaining_loan_list = [float(yearly_remaining_loan[y]) for y in years]
+
+#         total_deployed = sum(loan.amount for loan in loans)
+#         deployed_current_year = sum(loan.amount for loan in loans if loan.start_date.year == current_year)
+#         deployed_previous_year = total_deployed - deployed_current_year
+
+#         remaining_principal = sum(loan.remaining_principal for loan in loans if loan.status == 'active')
+
+#         total_interest = sum(i.previous_interest_amount + i.current_interest_amount for i in interest)
+#         current_year_interest = sum(
+#             i.current_interest_amount + i.previous_interest_amount
+#             for i in interest if i.date.year == current_year
+#         )
+#         previous_year_interest = total_interest - current_year_interest
+
+#         total_expenses_amount = sum(e.amount for e in expenses)
+#         current_year_expenses_amount = sum(e.amount for e in expenses if e.date.year == current_year)
+#         previous_year_expenses_amount = total_expenses_amount - current_year_expenses_amount
+
+#         total_expenses = total_expenses_amount + total_interest
+#         current_year_expenses = current_year_expenses_amount + current_year_interest
+#         previous_year_expenses = previous_year_expenses_amount + previous_year_interest
+
+#         total_savings = sum(d.amount for d in savings) + total_interest
+#         current_year_savings = sum(d.amount for d in savings if d.date.year == current_year) + current_year_interest
+#         previous_year_savings = total_savings - current_year_savings
+
+#         total_shares = sum(s.share_amount for s in share_balances)
+#         current_year_shares = sum(s.share_amount for s in share_balances if s.purchase_date.year == current_year)
+#         previous_year_shares = total_shares - current_year_shares
+
+#         total_members = members.count()
+#         principal_paid = total_deployed - remaining_principal
+#         balance_now = total_savings - principal_paid + total_shares - total_expenses
+
+#         # Prepare JSON serializable data for Chart.js
+#         yearly_data = []
+#         for y in years:
+#             yearly_data.append({
+#                 'year': y,
+#                 'savings': float(yearly_savings[y]),
+#                 'interest': float(yearly_interest[y]),
+#                 'loan_deployed': float(yearly_loans_deployed[y]),
+#                 'remaining_loan': float(yearly_remaining_loan[y]),
+#             })
+
+#         context = {
+#             'loans': loans,
+#             'total_deployed': total_deployed,
+#             'deployed_current_year': deployed_current_year,
+#             'deployed_previous_year': deployed_previous_year,
+
+#             'expenses': expenses,
+#             'total_expenses': total_expenses,
+#             'current_year_expenses': current_year_expenses,
+#             'previous_year_expenses': previous_year_expenses,
+
+#             'savings': savings,
+#             'total_savings': total_savings,
+#             'current_year_savings': current_year_savings,
+#             'previous_year_savings': previous_year_savings,
+
+#             'interest': interest,
+#             'total_interest': total_interest,
+#             'current_year_interest': current_year_interest,
+#             'previous_year_interest': previous_year_interest,
+
+#             'share_balances': share_balances,
+#             'total_shares': total_shares,
+#             'current_year_shares': current_year_shares,
+#             'previous_year_shares': previous_year_shares,
+
+#             'members': members,
+#             'total_members': total_members,
+
+#             'balance_now': balance_now,
+
+#             # For Chart.js
+#             'yearly_data': yearly_data,
+#         }
+#         print(yearly_data)
+#         return render(request, 'home.html', context)
+#     else:
+#         return redirect('user_home')
+
 
 
 # /saving/<member_id>/

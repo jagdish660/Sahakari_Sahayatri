@@ -37,12 +37,13 @@
                                     <ul class="dropdown-menu dropdown-success-bg" aria-labelledby="financeDropdown">
                                         <!-- Saving submenu -->
                                         <li class="dropdown-submenu position-relative">
-                                            <a class="dropdown-item dropdown-toggle dropdown-success-link" href="">Saving</a>
+                                            <a class="dropdown-item dropdown-toggle dropdown-success-link" href="#" data-toggle="dropdown-submenu">Saving</a>
                                             <ul class="dropdown-menu dropdown-success-bg">
                                                 <li><a class="dropdown-item" href="{% url 'saving_home' %}">View Savings</a></li>
                                                 <li><a class="dropdown-item" href="{% url 'saving_interest' %}">Saving Interest</a></li>
                                             </ul>
                                         </li>
+
                                         <!-- Other direct links -->
                                         <li><a class="dropdown-item dropdown-success-link" href="{% url 'loan_home' %}">Loan</a></li>
                                         <li><a class="dropdown-item dropdown-success-link" href="{% url 'expenses_home' %}">Expenses</a></li>
@@ -128,53 +129,6 @@
             </div>
         {% endif %}
 
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                // Toggle settings popup
-                document.getElementById("setting-icon").addEventListener("click", function(event) {
-                    event.preventDefault();
-                    var popup = document.getElementById("settings-popup");
-                    if (popup.style.display === "none" || popup.style.display === "") {
-                        popup.style.display = "block";
-                    } else {
-                        popup.style.display = "none";
-                    }
-                });
-
-                // Close the popup if clicked outside
-                document.addEventListener("click", function(event) {
-                    var popup = document.getElementById("settings-popup");
-                    var settingIcon = document.getElementById("setting-icon");
-                    if (popup && !settingIcon.contains(event.target) && !popup.contains(event.target)) {
-                        popup.style.display = "none";
-                    }
-                });
-            });
-
-            document.querySelectorAll('.alert').forEach(function(alert) {
-                const timerLine = alert.querySelector('.timer-line');
-
-                timerLine.addEventListener('animationend', function() {
-                    alert.style.display = 'none';
-                });
-            });
-
-            function closeAlert(element) {
-                element.closest('.alert').style.display = 'none';
-            }
-
-            document.addEventListener("DOMContentLoaded", function() {
-                let navbarToggler = document.querySelector(".navbar-toggler");
-                let navbarCollapse = document.querySelector(".navbar-collapse");
-                
-                document.addEventListener("click", function(event) {
-                    if (!navbarToggler.contains(event.target) && !navbarCollapse.contains(event.target)) {
-                        navbarCollapse.classList.remove("show");
-                    }
-                });
-            });
-        </script>
-
 
     <!-- Footer -->  
     <hr class="m-5">
@@ -184,10 +138,10 @@
                 <div class="col-12 col-md-3">
                     <div class="footer-link text-center">Links <hr></div>
                     <div class="footer-link-text">
-                        <a href="">Home</a><br>
-                        <a href="">Saving</a><br>
-                        <a href="">Loan</a><br>
-                        <a href="">Share</a><br>
+                        <a href="{% url 'home' %}">Home</a><br>
+                        <a href="{% url 'saving_home' %}">Saving</a><br>
+                        <a href="{% url 'loan_home' %}">Loan</a><br>
+                        <a href="{% url 'share_home' %}">Share</a><br>
                     </div>
                 </div>
                 <div class="col-12 col-md-3">
@@ -250,5 +204,86 @@
 }
 
 </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Toggle settings popup
+        document.getElementById("setting-icon").addEventListener("click", function (event) {
+            event.preventDefault();
+            var popup = document.getElementById("settings-popup");
+            if (popup.style.display === "none" || popup.style.display === "") {
+                popup.style.display = "block";
+            } else {
+                popup.style.display = "none";
+            }
+        });
+
+        // Close the settings popup if clicked outside
+        document.addEventListener("click", function (event) {
+            var popup = document.getElementById("settings-popup");
+            var settingIcon = document.getElementById("setting-icon");
+            if (popup && !settingIcon.contains(event.target) && !popup.contains(event.target)) {
+                popup.style.display = "none";
+            }
+        });
+
+        // Close navbar on outside click (mobile)
+        let navbarToggler = document.querySelector(".navbar-toggler");
+        let navbarCollapse = document.querySelector(".navbar-collapse");
+
+        document.addEventListener("click", function (event) {
+            if (!navbarToggler.contains(event.target) && !navbarCollapse.contains(event.target)) {
+                navbarCollapse.classList.remove("show");
+            }
+        });
+
+        // Auto-hide alert boxes after timer ends
+        document.querySelectorAll('.alert').forEach(function (alert) {
+            const timerLine = alert.querySelector('.timer-line');
+            if (timerLine) {
+                timerLine.addEventListener('animationend', function () {
+                    alert.style.display = 'none';
+                });
+            }
+        });
+
+        // Tap-to-toggle for mobile submenu dropdowns
+        const submenuToggles = document.querySelectorAll('[data-toggle="dropdown-submenu"]');
+
+        submenuToggles.forEach(function (toggle) {
+            toggle.addEventListener("click", function (e) {
+                const parent = toggle.closest(".dropdown-submenu");
+
+                // Prevent default anchor behavior
+                e.preventDefault();
+
+                // Close all other submenus
+                document.querySelectorAll(".dropdown-submenu").forEach(function (submenu) {
+                    if (submenu !== parent) {
+                        submenu.classList.remove("show");
+                    }
+                });
+
+                // Toggle this submenu
+                parent.classList.toggle("show");
+            });
+        });
+
+        // Close submenu on outside click
+        document.addEventListener("click", function (e) {
+            if (!e.target.closest(".dropdown-submenu")) {
+                document.querySelectorAll(".dropdown-submenu").forEach(function (submenu) {
+                    submenu.classList.remove("show");
+                });
+            }
+        });
+    });
+
+    // Manually close alert
+    function closeAlert(element) {
+        element.closest('.alert').style.display = 'none';
+    }
+</script>
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </html>

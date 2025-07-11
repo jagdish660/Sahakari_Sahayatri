@@ -11,40 +11,41 @@ Loan History: {{member.member_id}}
 <h2>Loans</h2> 
 <div class="card m-3">
 <h3>List of {{member.name}}'s Loan History</h3>
-        <table class="table table-striped table-responsive table-hover table-success">
-            <tr class="align-middle  text-center">
-                <th rowspan="2">S.N.</th>
-                <th rowspan="2">Loan ID</th>
-                <th rowspan="2">Start Date</th>
-                <th colspan="2">Loan</th>
-                <th rowspan="2">Status</th>
-                <th rowspan="2">Action</th>
-            </tr>
-            <tr class="align-middle  text-center">
-                <th>Principal</th>
-                <th>Remaining</th>
-            </tr>
-            {% for loan in loans%}
-                <tr class="text-center align-middle">
-                    <td>{{ forloop.counter }}.</td>
-                    <td><a href="" class="links text-decoration-none text-black fw-bold">{{ loan.id }}</a></td>
-                    <td>{{ loan.start_date }}</td>
-                    <td>Rs. {{ loan.amount }}</td>
-                    <td>Rs. {{ loan.remaining_principal }}</td>
-                    {% if loan.status == "active" %}
-                        <td><button  class="btn-sm btn-success">Active</pb></td>
-                    {% else %}
-                        <td>
-                        <button class="btn-sm btn-danger">Closed</button></td>
-                    {% endif %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover table-success">
+        <tr class="align-middle  text-center">
+            <th rowspan="2">S.N.</th>
+            <th rowspan="2">Loan ID</th>
+            <th rowspan="2">Start Date</th>
+            <th colspan="2">Loan</th>
+            <th rowspan="2">Status</th>
+            <th rowspan="2">Action</th>
+        </tr>
+        <tr class="align-middle  text-center">
+            <th>Principal</th>
+            <th>Remaining</th>
+        </tr>
+        {% for loan in page_obj %}
+            <tr class="text-center align-middle">
+                <td>{{ forloop.counter|add:page_obj.start_index|add:"-1" }}.</td>
+                <td><a href="" class="links text-decoration-none text-black fw-bold">{{ loan.id }}</a></td>
+                <td>{{ loan.start_date }}</td>
+                <td>Rs. {{ loan.amount }}</td>
+                <td>Rs. {{ loan.remaining_principal }}</td>
+                {% if loan.status == "active" %}
+                    <td><button  class="btn-sm btn-success">Active</pb></td>
+                {% else %}
                     <td>
-                        <a href="{% url 'loan_details' loan.id %}" class="btn btn-sm btn-outline-primary m-1">View</a>
-                    </td>
-                </tr>
-            {% endfor %}
-        
-        </table>
-        
+                    <button class="btn-sm btn-danger">Closed</button></td>
+                {% endif %}
+                <td>
+                    <a href="{% url 'loan_details' loan.id %}" class="btn btn-sm btn-outline-primary m-1">View</a>
+                </td>
+            </tr>
+        {% endfor %}
+    
+    </table>
+</div>
 
     <!-- Pagination -->
     <nav aria-label="Page navigation">

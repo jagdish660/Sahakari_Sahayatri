@@ -19,13 +19,13 @@ Manage Saving: {{ member.first_name }} {{ member.middle_name }} {{ member.last_n
         <!-- Member ID (read-only) -->
         <div class="mb-2">
             <label>Member ID:</label>
-            <input type="text" class="form-control" value="{{ member.member_id }}" disabled>
+            <span class="fw-bold">{{ member.member_id }}</span>
         </div>
 
         <!-- Name (read-only) -->
         <div class="mb-2">
             <label>Name:</label>
-            <input type="text" class="form-control" value="{% if member.middle_name %}{{ member.first_name }} {{ member.middle_name }} {{ member.last_name }}{% else %}{{ member.first_name }} {{ member.last_name }}{% endif %}" disabled>
+            <span class="fw-bold">{{ member.name }}</span>
         </div>
 
         <!-- Saving Amount -->
@@ -92,6 +92,9 @@ Manage Saving: {{ member.first_name }} {{ member.middle_name }} {{ member.last_n
             <button type="submit" class="btn btn-primary">Submit</button>
         </div>
     </form>
+</div>
+<div class="button-container">
+    <a href="{% url 'saving_home' %}" class="btn btn-danger">Back</a>
 </div>
 
 <!-- JS for toggle & auto-total -->

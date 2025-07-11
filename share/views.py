@@ -9,7 +9,8 @@ from itertools import chain
 from operator import attrgetter
 from django.db.models import F, Value as DBValue, CharField
 from django.contrib import messages
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -25,8 +26,12 @@ def share_home(request):
     previous_year_shares = total_shares - current_year_shares
     members = Member.objects.all()
     share = ShareBalance.objects.select_related('customer').all().order_by('-last_updated')
+    paginator = Paginator(share, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         'share': share,
+        'page_obj': page_obj,
         'shares': shares,
         'total_shares': total_shares,
         'current_year_shares': current_year_shares,
@@ -37,8 +42,7 @@ def share_home(request):
 
 
 # /share/add/<int:id>/
-from decimal import Decimal, InvalidOperation
-
+@login_required(login_url='loginpage')
 def share_add(request, id):
     member = get_object_or_404(Member, member_id=id)
 
@@ -83,53 +87,41 @@ def share_add(request, id):
 
 
 # /share/refund/<int:id>/
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from decimal import Decimal
-from django.utils import timezone
-
-from customer.models import Member, Transaction
-from share.models import ShareRefund, ShareBalance
-
+@login_required(login_url='loginpage')
 def share_refund(request, id):
     member = get_object_or_404(Member, member_id=id)
-
-    if request.method == "POST":
-        try:
-            amount = Decimal(request.POST.get('amount'))
-            
-            # Get the current share balance
-            share_balance_obj = ShareBalance.objects.filter(customer=member).first()
-            current_balance = Decimal(share_balance_obj.balance) if share_balance_obj else Decimal('0.00')
-
-            if amount <= 0:
-                messages.error(request, "Refund amount must be positive.")
-            elif amount > current_balance:
-                messages.error(request, f"Refund amount exceeds available shares. Available: {current_balance}")
-            else:
-                # Create share refund record
-                ShareRefund.objects.create(
-                    customer=member,
-                    refund_amount=int(amount),
-                    refund_date=timezone.now()
-                )
-
-                # Create transaction record
-                Transaction.objects.create(
-                    member=member,
-                    date=timezone.now(),
-                    amount=Decimal('0.00'),
-                    share=-amount,
-                    remarks=f"Share refund of Rs. {amount} on {timezone.now().date()}"
-                )
-
-                messages.success(request, f"Successfully refunded Rs. {amount} from shares.")
-                return redirect('customer_details', member_id=member.member_id)
-
-        except Exception as e:
-            messages.error(request, f"Error: {e}")
-            print(e)
-
+    if request.user.is_superuser or request.user.is_staff:
+        if request.method == "POST":
+            try:
+                amount = Decimal(request.POST.get('amount'))
+                # Get the current share balance
+                share_balance_obj = ShareBalance.objects.filter(customer=member).first()
+                current_balance = Decimal(share_balance_obj.balance) if share_balance_obj else Decimal('0.00')
+                if amount <= 0:
+                    messages.error(request, "Refund amount must be positive.")
+                elif amount > current_balance:
+                    messages.error(request, f"Refund amount exceeds available shares. Available: {current_balance}")
+                else:
+                    ShareRefund.objects.create(
+                        customer=member,
+                        refund_amount=int(amount),
+                        refund_date=timezone.now()
+                    )
+                    Transaction.objects.create(
+                        member=member,
+                        date=timezone.now(),
+                        amount=Decimal('0.00'),
+                        share=-amount,
+                        remarks=f"Share refund of Rs. {amount} on {timezone.now().date()}"
+                    )
+                    messages.success(request, f"Successfully refunded Rs. {amount} from shares.")
+                    return redirect('share_home')
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+                print(e)
+    else:
+        messages.error(request, "You're not allowed to perform this task.")
+        return redirect('share_home')
     return render(request, 'share_refund.html', {'member': member})
 
 

@@ -3,7 +3,6 @@ from django.shortcuts import redirect
 from customer import views as customer
 
 
-
 urlpatterns = [
     path('login/', customer.loginpage, name='loginpage'),
     path('logout/', customer.logout_user, name='logoutpage'),
