@@ -40,12 +40,11 @@ Member Detail
 
     <div class="m-3">
         <h5>Saving</h5>
-
         <p>
             Saving amount : {{total_saved}} <br>
             <p>Do you want to add new Saving?</p>
             <a href="{% url 'saving_add' member.member_id %}" class="btn btn-sm btn-primary">Add Saving</a>
-    </p>
+        </p>
     <div class="table-responsive mt-3">
         <table class="table table-striped table-hover table-bordered mt-3 text-center table-success">
             <thead>
@@ -169,6 +168,8 @@ Member Detail
             Share : {{total_share}}
         </p>
         {% if share_transactions %}
+        <p>Do you want to add new Share?</p>
+        <a href="{% url 'share_add' member.member_id %}" class="btn btn-sm btn-primary">Add Share</a>
         <div class="table-responsive">
             <table class="table table-responsive table-striped table-bordered mt-3 text-center table-hover table-success">
                 <thead>
@@ -210,6 +211,7 @@ Member Detail
         </div>
         {% else %}
             <p>No share transactions available.</p>
+            <a href="{% url 'share_add' member.member_id %}" class="btn btn-sm btn-primary">Add Share</a>
         {% endif %}
     </div>
 

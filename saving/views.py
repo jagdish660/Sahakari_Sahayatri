@@ -387,7 +387,8 @@ def saving_interest(request):
 def saving_add(request, member_id):
     member = get_object_or_404(Member, member_id=member_id)
     loan = Loan.objects.filter(customer=member, status='active').first()
-    interest_due = interest_to_pay(loan)
+    if loan:
+        interest_due = interest_to_pay(loan)
     if request.method == 'POST':
         form = SavingAddForm(request.POST, member=member)
         if form.is_valid():
@@ -503,7 +504,10 @@ def saving_add(request, member_id):
             messages.error(request, "Invalid form data submitted.")
     else:
         form = SavingAddForm(member=member)
+    if loan:
+        return render(request, 'saving_add.html', {'form': form, 'member': member, 'loan': loan, 'interest_to_pay': interest_due})
+    else:
+        return render(request, 'saving_add.html', {'form': form, 'member': member, 'loan': loan})
 
-    return render(request, 'saving_add.html', {'form': form, 'member': member, 'loan': loan, 'interest_to_pay': interest_due})
 
 

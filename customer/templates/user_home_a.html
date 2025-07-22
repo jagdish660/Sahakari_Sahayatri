@@ -10,8 +10,6 @@ Transaction
 {% endblock scripts %}
 
 {% block content %}
-<h1 class="m-4 text-center text-primary">Sahakari Sahayatri</h1>
-
 <!-- Embed JSON data safely -->
 {{ fiscal_years|json_script:"fiscalYearsData" }}
 {{ fiscal_savings_values|json_script:"fiscalSavingsValuesData" }}
