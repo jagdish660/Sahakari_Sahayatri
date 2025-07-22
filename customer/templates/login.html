@@ -6,9 +6,11 @@ Login
 {% endblock title %}
 
 {% block content %}
-<h2>Login</h2>
+
 <div class="form-div">
     <form method="post" action="{% url 'loginpage'  %}" class="form-member">
+        
+<div class="text-center"><h2 class="p-3">Login</h2></div>
         {% csrf_token %}
 
         <div class="mb-2">
@@ -27,7 +29,7 @@ Login
         </div>
 
         <div class="mb-3 button-container">
-            <button type="submit" class="btn btn-md btn-primary" value="submit">Login</button>
+            <button type="submit" class="btn btn-md more-btn btn-primary" value="submit">Login</button>
         </div>
 
         <div class="mb-3">

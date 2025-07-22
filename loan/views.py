@@ -113,84 +113,89 @@ def loan_details(request, id):
 
 
 # /loan/update/<int:id>/
+@login_required(login_url='loginpage')
 def loan_update(request, id):
-    loan = get_object_or_404(Loan, id=id)
-    # Always calculate this for both GET and POST
-    interest_due = interest_to_pay(loan)
-    if request.method == 'POST':
-        try:
-            interest_paid = Decimal(request.POST.get('interest_paid', '0'))
-            principal_paid = Decimal(request.POST.get('principal_paid', '0'))
-            remarks = request.POST.get('remarks', '').strip()
-            if interest_paid < 0:
-                messages.error(request, "Interest paid must not be zero or negative.")
-                return redirect('loan_update', id=loan.id)
-            if principal_paid < 0:
-                messages.error(request, "Principal paid must not be zero or negative.")
-                return redirect('loan_update', id=loan.id)
-            if interest_paid < interest_due:
-                messages.error(request, "You're not allowed to pay interest less than interest due.")
-                return redirect('loan_update', id=loan.id)
-            remaining_principal = loan.remaining_principal
-            # Apply interest payment
-            applied_interest = min(interest_paid, interest_due)
-            excess_interest = max(interest_paid - applied_interest, Decimal('0.00'))
-            # Apply principal payment (including any excess from interest)
-            total_principal_payment = principal_paid + excess_interest
-            actual_principal_paid = min(total_principal_payment, remaining_principal)
-            new_remaining = (remaining_principal - actual_principal_paid).quantize(Decimal('0.01'))
-            # Check for total overpayment
-            total_payment = interest_paid + principal_paid
-            used_payment = applied_interest + actual_principal_paid
-            excess_for_deposit = max(total_payment - used_payment, Decimal('0.00')).quantize(Decimal('0.01'))
-            # Save Repayment record
-            Repayment.objects.create(
-                loan=loan,
-                previous_principal=remaining_principal,
-                repayment_date=date.today(),
-                amount_paid=total_payment,
-                principal_paid=actual_principal_paid,
-                interest_paid=applied_interest,
-                remaining_principal=new_remaining,
-                remarks=remarks
-            )
-            # Update loan balance
-            loan.remaining_principal = new_remaining
-            loan.update_status_based_on_principal()
-            loan.save()
-            # Handle excess deposit
-            if excess_for_deposit > 0:
-                Deposit.objects.create(
-                    customer=loan.customer,
-                    amount=excess_for_deposit,
-                    date=date.today(),
-                    payment_method='cash',
-                    remarks=f"Excess payment deposit from Loan #{loan.id}"
+    if request.user.is_staff or request.user.is_superuser:
+        loan = get_object_or_404(Loan, id=id)
+        # Always calculate this for both GET and POST
+        interest_due = interest_to_pay(loan)
+        if request.method == 'POST':
+            try:
+                interest_paid = Decimal(request.POST.get('interest_paid', '0'))
+                principal_paid = Decimal(request.POST.get('principal_paid', '0'))
+                remarks = request.POST.get('remarks', '').strip()
+                if interest_paid < 0:
+                    messages.error(request, "Interest paid must not be zero or negative.")
+                    return redirect('loan_update', id=loan.id)
+                if principal_paid < 0:
+                    messages.error(request, "Principal paid must not be zero or negative.")
+                    return redirect('loan_update', id=loan.id)
+                if interest_paid < interest_due:
+                    messages.error(request, "You're not allowed to pay interest less than interest due.")
+                    return redirect('loan_update', id=loan.id)
+                remaining_principal = loan.remaining_principal
+                # Apply interest payment
+                applied_interest = min(interest_paid, interest_due)
+                excess_interest = max(interest_paid - applied_interest, Decimal('0.00'))
+                # Apply principal payment (including any excess from interest)
+                total_principal_payment = principal_paid + excess_interest
+                actual_principal_paid = min(total_principal_payment, remaining_principal)
+                new_remaining = (remaining_principal - actual_principal_paid).quantize(Decimal('0.01'))
+                # Check for total overpayment
+                total_payment = interest_paid + principal_paid
+                used_payment = applied_interest + actual_principal_paid
+                excess_for_deposit = max(total_payment - used_payment, Decimal('0.00')).quantize(Decimal('0.01'))
+                # Save Repayment record
+                Repayment.objects.create(
+                    loan=loan,
+                    previous_principal=remaining_principal,
+                    repayment_date=date.today(),
+                    amount_paid=total_payment,
+                    principal_paid=actual_principal_paid,
+                    interest_paid=applied_interest,
+                    remaining_principal=new_remaining,
+                    remarks=remarks
                 )
-            # Log transaction
-            Transaction.objects.create(
-                member=loan.customer,
-                date=date.today(),
-                amount=total_payment,
-                loan_repayment=actual_principal_paid,
-                interest_paid=applied_interest,
-                other_fee=Decimal('0.00'),
-                saving_balance=excess_for_deposit,
-                remarks=f"Loan payment for Loan #{loan.id}",
-                payment_method='cash'
-            )
-            messages.success(request, "Loan updated successfully.")
-            return redirect('loan_home' if request.user.is_staff or request.user.is_superuser else 'about_me')
-        except Exception as e:
-            print(f"Loan update error: {e}")
-            messages.error(request, f"Error updating loan: {str(e)}")
-            return redirect('loan_update', id=loan.id)
-    # GET: show form with interest_due
-    context = {
-        'loan': loan,
-        'interest_due': interest_due,
-    }
-    return render(request, 'loan_update.html', context)
+                # Update loan balance
+                loan.remaining_principal = new_remaining
+                loan.update_status_based_on_principal()
+                loan.save()
+                # Handle excess deposit
+                if excess_for_deposit > 0:
+                    Deposit.objects.create(
+                        customer=loan.customer,
+                        amount=excess_for_deposit,
+                        date=date.today(),
+                        payment_method='cash',
+                        remarks=f"Excess payment deposit from Loan #{loan.id}"
+                    )
+                # Log transaction
+                Transaction.objects.create(
+                    member=loan.customer,
+                    date=date.today(),
+                    amount=total_payment,
+                    loan_repayment=actual_principal_paid,
+                    interest_paid=applied_interest,
+                    other_fee=Decimal('0.00'),
+                    saving_balance=excess_for_deposit,
+                    remarks=f"Loan payment for Loan #{loan.id}",
+                    payment_method='cash'
+                )
+                messages.success(request, "Loan updated successfully.")
+                return redirect('loan_home' if request.user.is_staff or request.user.is_superuser else 'about_me')
+            except Exception as e:
+                print(f"Loan update error: {e}")
+                messages.error(request, f"Error updating loan: {str(e)}")
+                return redirect('loan_update', id=loan.id)
+        # GET: show form with interest_due
+        context = {
+            'loan': loan,
+            'interest_due': interest_due,
+        }
+        return render(request, 'loan_update.html', context)
+    else:
+        messages.error(request, "You're not allowed to perform this task.")
+        return redirect('loan_home')
 
 
 # /loan/all/<int:id>/
@@ -255,39 +260,40 @@ def loan_add(request):
 
 
 # /loan/add/<int:id>/
+@login_required(login_url='loginpage')
 def loan_add_individual(request, id):
     member = get_object_or_404(Member, member_id=id)
     
-    if not (request.user.is_staff or request.user.is_superuser):
+    if (request.user.is_staff or request.user.is_superuser):
+        if request.method == 'POST':
+            principal = request.POST.get('principal')
+            rate = request.POST.get('rate')
+
+            try:
+                balance_now=get_balance_now()
+                if Decimal(principal) > balance_now:
+                    messages.error(request, "You don't have enough balance to provide loan")
+                    return redirect('loan_home')
+                # Check for active loan
+                if Loan.objects.filter(customer=member, status='active').exists():
+                    messages.error(request, f"{member.name} already has an active loan.")
+                    return render(request, 'loan_add_individual.html', {'member': member})
+
+                # Deploy loan
+                Loan.objects.create(
+                    customer=member,
+                    amount=Decimal(principal),
+                    interest_rate=Decimal(rate),
+                    start_date=timezone.now()
+                )
+                messages.success(request, f"Loan successfully deployed to {member.name}.")
+                return redirect('customer_details', member.member_id)
+
+            except Exception as e:
+                messages.error(request, f"Unexpected Error: {e}")
+
+        return render(request, 'loan_add_individual.html', {'member': member})
+    else:
         messages.error(request, "You're not allowed to perform this task.")
-        return redirect('home')
-
-    if request.method == 'POST':
-        principal = request.POST.get('principal')
-        rate = request.POST.get('rate')
-
-        try:
-            balance_now=get_balance_now()
-            if Decimal(principal) > balance_now:
-                messages.error(request, "You don't have enough balance to provide loan")
-                return redirect('loan_home')
-            # Check for active loan
-            if Loan.objects.filter(customer=member, status='active').exists():
-                messages.error(request, f"{member.name} already has an active loan.")
-                return render(request, 'loan_add_individual.html', {'member': member})
-
-            # Deploy loan
-            Loan.objects.create(
-                customer=member,
-                amount=Decimal(principal),
-                interest_rate=Decimal(rate),
-                start_date=timezone.now()
-            )
-            messages.success(request, f"Loan successfully deployed to {member.name}.")
-            return redirect('customer_details', member.member_id)
-
-        except Exception as e:
-            messages.error(request, f"Unexpected Error: {e}")
-
-    return render(request, 'loan_add_individual.html', {'member': member})
+        return redirect('loan_home')
 

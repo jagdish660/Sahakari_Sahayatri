@@ -54,7 +54,7 @@ Share Details: {{ member.first_name }} {{ member.last_name }}
 </div>
 {% if request.user.is_staff or request.user.is_superuser %}
 <div class="button-container">
-    <a href="" class="btn-danger btn">Back</a>
+    <a href="{% url 'share_home' %}" class="btn-danger btn">Back</a>
 </div>
 {% else %}
 <div class="button-container">

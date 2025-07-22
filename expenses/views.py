@@ -15,68 +15,72 @@ CATEGORY_LABELS = dict(EXPENSE_CATEGORIES)
 # /expenses/
 @login_required(login_url='loginpage')
 def expenses_home(request):
-    expenses = list(Expense.objects.all().order_by('-date'))
-    total_expenses = sum(exp.amount for exp in Expense.objects.all())
-    total_expenses += sum(exp.current_interest_amount for exp in YearlyInterest.objects.all())
-    total_expenses += sum(exp.previous_interest_amount for exp in YearlyInterest.objects.all())
-    for exp in expenses:
-        exp.category_label = CATEGORY_LABELS.get(exp.category, exp.category)
-    # Aggregate YearlyInterest entries by date
-    interest_by_date = {}
-    for interest in YearlyInterest.objects.all():
-        if interest.date not in interest_by_date:
-            interest_by_date[interest.date] = {
-                'total_interest': Decimal('0.00'),
-                'remarks': interest.remarks or 'Yearly Interest'
-            }
-        interest_by_date[interest.date]['total_interest'] += (
-            interest.current_interest_amount + interest.previous_interest_amount
-        )
-    # Convert grouped interests to expense-like entries
-    interest_expenses = []
-    for date, data in interest_by_date.items():
-        interest_expenses.append({
-            'date': date,
-            'category': 'Interest on Saving',
-            'category_label': CATEGORY_LABELS.get('interest_saving', 'Interest'),
-            'amount': data['total_interest'],
-            'remarks': data['remarks']
-        })
-    # Combine and sort all expense-like objects
-    combined_expenses = []
-    for exp in expenses:
-        combined_expenses.append({
-            'date': exp.date,
-            'category': exp.category,
-            'category_label': exp.category_label, #Label for display
-            'amount': exp.amount,
-            'remarks': exp.remarks
-        })
-    combined_expenses += interest_expenses
-    combined_expenses.sort(key=lambda x: x['date'], reverse=True)
-    # Calculate totals per category
-    totals = defaultdict(Decimal)
-    for exp in combined_expenses:
-        totals[exp['category']] += exp['amount']
-    # Format totals with readable labels
-    field_totals = [
-        {'category': CATEGORY_LABELS.get(category, category), 'total': totals}
-        for category, totals in totals.items()
-    ]
-    paginator = Paginator(combined_expenses, 15)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    context = {
-        'expenses': combined_expenses,
-        'page_obj': page_obj,
-        'field_totals': field_totals,
-        'total_yearly_interest': next(
-            (item['total'] for item in field_totals if item['category'] == CATEGORY_LABELS.get('interest_saving', 'Interest')),
-            Decimal('0.00')
-        ),
-        'total_expenses': total_expenses
-    }
-    return render(request, 'expenses_home.html', context)
+    if request.user.is_staff or request.user.is_superuser:
+        expenses = list(Expense.objects.all().order_by('-date'))
+        total_expenses = sum(exp.amount for exp in Expense.objects.all())
+        total_expenses += sum(exp.current_interest_amount for exp in YearlyInterest.objects.all())
+        total_expenses += sum(exp.previous_interest_amount for exp in YearlyInterest.objects.all())
+        for exp in expenses:
+            exp.category_label = CATEGORY_LABELS.get(exp.category, exp.category)
+        # Aggregate YearlyInterest entries by date
+        interest_by_date = {}
+        for interest in YearlyInterest.objects.all():
+            if interest.date not in interest_by_date:
+                interest_by_date[interest.date] = {
+                    'total_interest': Decimal('0.00'),
+                    'remarks': interest.remarks or 'Yearly Interest'
+                }
+            interest_by_date[interest.date]['total_interest'] += (
+                interest.current_interest_amount + interest.previous_interest_amount
+            )
+        # Convert grouped interests to expense-like entries
+        interest_expenses = []
+        for date, data in interest_by_date.items():
+            interest_expenses.append({
+                'date': date,
+                'category': 'Interest on Saving',
+                'category_label': CATEGORY_LABELS.get('interest_saving', 'Interest'),
+                'amount': data['total_interest'],
+                'remarks': data['remarks']
+            })
+        # Combine and sort all expense-like objects
+        combined_expenses = []
+        for exp in expenses:
+            combined_expenses.append({
+                'date': exp.date,
+                'category': exp.category,
+                'category_label': exp.category_label, #Label for display
+                'amount': exp.amount,
+                'remarks': exp.remarks
+            })
+        combined_expenses += interest_expenses
+        combined_expenses.sort(key=lambda x: x['date'], reverse=True)
+        # Calculate totals per category
+        totals = defaultdict(Decimal)
+        for exp in combined_expenses:
+            totals[exp['category']] += exp['amount']
+        # Format totals with readable labels
+        field_totals = [
+            {'category': CATEGORY_LABELS.get(category, category), 'total': totals}
+            for category, totals in totals.items()
+        ]
+        paginator = Paginator(combined_expenses, 15)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        context = {
+            'expenses': combined_expenses,
+            'page_obj': page_obj,
+            'field_totals': field_totals,
+            'total_yearly_interest': next(
+                (item['total'] for item in field_totals if item['category'] == CATEGORY_LABELS.get('interest_saving', 'Interest')),
+                Decimal('0.00')
+            ),
+            'total_expenses': total_expenses
+        }
+        return render(request, 'expenses_home.html', context)
+    else:
+        messages.error(request, "You're not allowed to perform this task.")
+        return redirect('home')
 
 
 

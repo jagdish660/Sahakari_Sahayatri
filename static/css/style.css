@@ -398,36 +398,15 @@ font-size: 14px;
     border: 1px solid #ddd;
 }
 
-.scholarship-college {
-    background-color: rgb(200, 228, 224);
-    border-radius: 8px;width: 100%;
-    min-height: 250px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #ddd;
-}
 
-.scholarship-college, .featured-college, .cardd{
+.cardd{
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.placement-college:hover, .scholarship-college:hover, .featured-college:hover, .card-college:hover {
+.card-college:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-}
-
-.placement-college:hover, .featured-college:hover{
-    background-color: rgb(181, 223, 181);
-}
-
-.scholarship-college:hover{
-    background-color: rgb(184, 228, 221);
 }
 
 .card-body {
@@ -457,7 +436,7 @@ font-size: 14px;
 }
 
 .form-member, .form-saving, .form-loan, .form-share {
-    width: 50vw;
+    width: 45vw;
     border: 1px solid black;
     border-radius: 10px;
     padding-top: 3vw;

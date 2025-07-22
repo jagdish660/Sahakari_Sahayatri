@@ -152,6 +152,9 @@ About Me
                         </tbody>
                     </table>
                 </div>
+                {% else %}
+                <p>No active loans.</p>
+                break
                 {% endif %}
             {% endfor %}
             <div class="container">

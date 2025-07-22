@@ -6,9 +6,11 @@ Edit details : {{form.first_name}} {{form.middle_name}} {{form.last_name}}
 {% endblock title %}
 
 {% block content %}
-<h2>Edit Your details</h2>
 <div class="form-div">
     <form method="post" action="{% url 'user_customer_update' id %}" class="form-member">
+    <div class="text-center">
+        <h2 class="p-3">Edit Your details</h2>
+    </div>
         {% csrf_token %}
         <div class="mb-2">
             <label for="member_id">Member ID: </label><span class="fw-bold"> {{id}}</span>

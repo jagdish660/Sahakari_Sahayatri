@@ -236,6 +236,7 @@ def user_home(request):
     # fiscal_remaining_balance_values = [float(fiscal_remaining_balances.get(year, 0)) for year in sorted_years]
 
     context = {
+        'member': member,
         'active_loans': active_loans,
         'closed_loans': closed_loans,
         'total_deployed': total_deployed,
@@ -424,6 +425,8 @@ def member_details(request, member_id):
 
 @login_required(login_url='loginpage')
 def about_me(request):
+    if request.user.is_staff or request.user.is_superuser:
+        return redirect('home')
     member = get_object_or_404(Member, user=request.user)
     # Fetch savings data
     deposits = Deposit.objects.filter(customer=member)

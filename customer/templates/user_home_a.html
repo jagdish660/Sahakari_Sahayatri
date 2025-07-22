@@ -27,7 +27,7 @@ Transaction
     </div>  
     <div class="col-lg-5 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
-            <h4>Loan and Remaining Balance</h4>
+            <h4>Loan </h4>
             <canvas id="fiscalLoanChart" width="400" height="250"></canvas> 
         </div>
     </div>  
@@ -41,15 +41,19 @@ Transaction
             <p class="fs-3 fw-bold">Rs. {{ total_savings }}</p>
             <p>Current year savings: Rs. {{ current_year_savings }}</p>
             <p>Previous year savings: Rs. {{ previous_year_savings }}</p>
+            <div>
+                <a href="{% url 'saving_details' member.member_id %}" class="btn-sm more-btn btn-success">Explore</a>
+            </div>
         </div>
+        
     </div>  
 </div>
 
 <div class="row justify-content-center m-3">
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
+            <h4>Loans</h4>
             {% if active_loans %}
-                <h4>Active Loans</h4>
                 {% for loan in active_loans %}
                     <p class="fs-5 fw-semibold">Loan Amount: Rs. {{ loan.amount }}</p>    
                     <p>Remaining Principal: Rs. {{ loan.remaining_principal }}</p>
@@ -59,6 +63,9 @@ Transaction
             {% else %}
                 <p class="fs-5 fw-bold">No active loans.</p>
             {% endif %} 
+            <div>
+                <a href="{% url 'loan_home' %}" class="btn-sm more-btn btn-success">Explore</a>
+            </div>
         </div>
     </div>
 
@@ -68,6 +75,9 @@ Transaction
             <p class="fs-3 fw-bold">Rs. {{ total_shares }}</p>
             <p>Current year shares: Rs. {{ current_year_shares }}</p>
             <p>Previous year shares: Rs. {{ previous_year_shares }}</p>
+            <div>
+                <a href="{% url 'share_details' member.member_id %}" class="btn-sm more-btn btn-success">Explore</a>
+            </div>
         </div>
     </div>
 </div>
@@ -147,7 +157,7 @@ Transaction
         responsive: true,
         plugins: {
             legend: { display: true, position: 'top' },
-            title: { display: true, text: 'Fiscal Year Loan Amount and Remaining Balance' }
+            title: { display: true, text: 'Fiscal Year Loan Amount' }
         },
         scales: {
             y: {

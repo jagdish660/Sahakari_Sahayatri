@@ -17,35 +17,38 @@ from django.core.paginator import Paginator
 # /share/
 @login_required(login_url='loginpage')
 def share_home(request):
-    shares = ShareCapital.objects.select_related('customer').all().order_by('-purchase_date')
-    total_shares = sum(share.share_amount for share in shares)
-    current_year = timezone.now().year
-    current_year_shares = sum(
-        share.share_amount for share in shares if share.purchase_date.year == current_year
-    )
-    previous_year_shares = total_shares - current_year_shares
-    members = Member.objects.all()
-    share = ShareBalance.objects.select_related('customer').all().order_by('-last_updated')
-    paginator = Paginator(share, 25)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    context = {
-        'share': share,
-        'page_obj': page_obj,
-        'shares': shares,
-        'total_shares': total_shares,
-        'current_year_shares': current_year_shares,
-        'previous_year_shares': previous_year_shares,
-        'members': members,
-    }
-    return render(request, 'share_home.html', context)
+    if request.user.is_staff or request.user.is_superuser:
+        
+        shares = ShareCapital.objects.select_related('customer').all().order_by('-purchase_date')
+        total_shares = sum(share.share_amount for share in shares)
+        current_year = timezone.now().year
+        current_year_shares = sum(
+            share.share_amount for share in shares if share.purchase_date.year == current_year
+        )
+        previous_year_shares = total_shares - current_year_shares
+        members = Member.objects.all()
+        share = ShareBalance.objects.select_related('customer').all().order_by('-last_updated')
+        paginator = Paginator(share, 25)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        context = {
+            'share': share,
+            'page_obj': page_obj,
+            'shares': shares,
+            'total_shares': total_shares,
+            'current_year_shares': current_year_shares,
+            'previous_year_shares': previous_year_shares,
+            'members': members,
+        }
+        return render(request, 'share_home.html', context)
+    else:
+        return redirect('home')
 
 
 # /share/add/<int:id>/
 @login_required(login_url='loginpage')
 def share_add(request, id):
     member = get_object_or_404(Member, member_id=id)
-
     if request.user.is_staff or request.user.is_superuser:
         if request.method == "POST":
             try:
@@ -129,8 +132,6 @@ def share_refund(request, id):
 @login_required(login_url='loginpage')
 def share_details(request, id):
     member = Member.objects.filter(member_id=id).first()
-    print(id)
-    print(member)
     if not member:
         # Handle not found member properly (redirect or 404)
         return render(request, 'share_details.html', {'error': 'Member not found.'})
@@ -168,3 +169,36 @@ def share_details(request, id):
     }
     return render(request, 'share_details.html', context)
 
+
+#  /share/add/
+@login_required(login_url='loginpage')
+def share_add_individual(request):
+    if request.user.is_staff or request.user.is_superuser:
+
+        members = Member.objects.all()
+        if request.method == 'POST':
+            member_id = request.POST.get('member_id')
+            amount = request.POST.get('amount')
+            # Validation
+            if not member_id or not member_id.isdigit():
+                messages.error(request, "Please select a valid member.")
+                return render(request, 'share_add_individual.html', {'members': members})
+            if not amount:
+                messages.error(request, "Please enter a valid amount.")
+                return render(request, 'share_add_individual.html', {'members': members})
+            try:
+                customer = Member.objects.get(pk=int(member_id))
+                ShareCapital.objects.create(
+                    customer=customer,
+                    share_amount=Decimal(amount),
+                    purchase_date=timezone.now()
+                )
+                messages.success(request, f"Share successfully added for {customer.name}.")
+                return redirect('share_home')
+            except Member.DoesNotExist:
+                messages.error(request, "Member not found.")
+            except Exception as e:
+                messages.error(request, f"Error occurred: {e}")
+        return render(request, 'share_add_individual.html', {'members': members})
+    else:
+        return redirect('home')
