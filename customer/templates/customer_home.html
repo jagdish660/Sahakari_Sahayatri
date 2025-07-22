@@ -65,10 +65,16 @@ Member Home
                             <form method="GET" action="{% url 'customer_details' customer.member_id %}">
                                 <button class="btn btn-sm btn-outline-primary m-2" type="submit">View</button>
                             </form>
-                            <form method="POST" action="{% url 'customer_delete' customer.member_id %}" onsubmit="return confirm('Are you sure you want to delete {{ customer.name }} (ID: {{ customer.member_id }})?');">
-                                {% csrf_token %}
-                                <button class="btn btn-sm btn-outline-danger m-2" type="submit">Delete</button>
-                            </form>
+                            <form id="delete-form-{{ customer.member_id }}" method="POST" action="{% url 'customer_delete' customer.member_id %}">
+                            {% csrf_token %}
+                            <button 
+                                type="button" 
+                                class="btn btn-sm btn-outline-danger m-2"
+                                onclick="confirmDelete('{{ customer.name }}', '{{ customer.member_id }}')">
+                                Delete
+                            </button>
+                        </form>
+
                         </td>
                     </tr>
                 {% endfor %}
@@ -161,38 +167,45 @@ body.modal-open *:not(.modal-overlay):not(.modal-content):not(.modal-content *) 
  <!-- Add this inside your existing <script> tag or replace the existing one -->
 
 <script>
-const modal = document.getElementById("addMemberModal");
-const openBtn = document.getElementById("openFormBtn");
-const closeBtn = document.getElementById("closeFormBtn");
+    const modal = document.getElementById("addMemberModal");
+    const openBtn = document.getElementById("openFormBtn");
+    const closeBtn = document.getElementById("closeFormBtn");
 
-openBtn.onclick = function() {
-    modal.style.display = "flex";  // Changed to flex for centering
-    document.body.classList.add("modal-open");
-};
+    openBtn.onclick = function() {
+        modal.style.display = "flex";  // Changed to flex for centering
+        document.body.classList.add("modal-open");
+    };
 
-closeBtn.onclick = function() {
-    modal.style.display = "none";
-    document.body.classList.remove("modal-open");
-};
-
-// Close modal if click outside modal-content
-modal.onclick = function(event) {
-    // If the clicked target is the overlay itself, close the modal
-    if (event.target === modal) {
+    closeBtn.onclick = function() {
         modal.style.display = "none";
         document.body.classList.remove("modal-open");
+    };
+
+    // Close modal if click outside modal-content
+    modal.onclick = function(event) {
+        // If the clicked target is the overlay itself, close the modal
+        if (event.target === modal) {
+            modal.style.display = "none";
+            document.body.classList.remove("modal-open");
+        }
+    };
+
+    document.getElementById("openFormBtn").onclick = function() {
+        document.getElementById("addMemberModal").style.display = "block";
+        document.body.classList.add("modal-open");
+    };
+
+    document.getElementById("closeFormBtn").onclick = function() {
+        document.getElementById("addMemberModal").style.display = "none";
+        document.body.classList.remove("modal-open");
+    };
+
+    function confirmDelete(name, memberId) {
+        const confirmed = window.confirm(`Are you sure you want to delete ${name} (ID: ${memberId})?`);
+        if (confirmed) {
+        document.getElementById(`delete-form-${memberId}`).submit();
+        }
     }
-};
-
-document.getElementById("openFormBtn").onclick = function() {
-    document.getElementById("addMemberModal").style.display = "block";
-    document.body.classList.add("modal-open");
-};
-
-document.getElementById("closeFormBtn").onclick = function() {
-    document.getElementById("addMemberModal").style.display = "none";
-    document.body.classList.remove("modal-open");
-};
 </script>
 
 {% endblock content %}

@@ -12,7 +12,7 @@ from saving.forms import SavingAddForm
 from django.core.paginator import Paginator
 from django.db.models import Sum, F
 from decimal import Decimal, ROUND_HALF_UP
-
+from loan.utils import interest_to_pay
 
 # Create your views here.
 def get_fiscal_year_start():
@@ -21,7 +21,6 @@ def get_fiscal_year_start():
         return date(today.year, 7, 16)
     else:
         return date(today.year - 1, 7, 16)
-
 
 
 
@@ -388,75 +387,93 @@ def saving_interest(request):
 def saving_add(request, member_id):
     member = get_object_or_404(Member, member_id=member_id)
     loan = Loan.objects.filter(customer=member, status='active').first()
-
+    interest_due = interest_to_pay(loan)
     if request.method == 'POST':
         form = SavingAddForm(request.POST, member=member)
         if form.is_valid():
             try:
+                # Form data
                 user_saving = form.cleaned_data.get('saving') or Decimal('0.00')
                 user_interest = form.cleaned_data.get('interest_paid') or Decimal('0.00')
                 user_principal = form.cleaned_data.get('principal_paid') or Decimal('0.00')
                 other_fee = form.cleaned_data.get('other_fee') or Decimal('0.00')
                 payment_method = form.cleaned_data.get('payment_method')
                 remarks = form.cleaned_data.get('remarks')
-                date = timezone.now()
-
-                # Defaults
+                date_now = timezone.now()
+                if not user_saving:
+                    messages.error(request, "You didn't entered saving amount.")
+                    return redirect('saving_home')
                 interest_to_apply = Decimal('0.00')
                 principal_to_apply = Decimal('0.00')
-                principal_excess = Decimal('0.00')
                 interest_excess = Decimal('0.00')
-                total_repayment = Decimal('0.00')
+                principal_excess = Decimal('0.00')
 
                 loan_id = request.POST.get('loan_id')
                 loan_obj = None
+                total_repayment = Decimal('0.00')
 
                 if loan_id:
                     loan_obj = get_object_or_404(Loan, id=loan_id)
-                    interest_due = loan_obj.interest_to_pay()
+                    # interest_due = interest_to_pay(loan_obj)
                     principal_due = loan_obj.remaining_principal
-                    # Pay interest
-                    interest_to_apply = min(user_interest, interest_due)
-                    interest_excess = max(user_interest - interest_due, Decimal('0.00'))
-                    # Add excess interest to principal input
-                    total_principal_input = user_principal + interest_excess
-                    # Apply principal
-                    principal_to_apply = min(total_principal_input, principal_due)
-                    principal_excess = max(total_principal_input - principal_due, Decimal('0.00'))
-                    # Record repayment
-                    if interest_to_apply > 0 or principal_to_apply > 0:
-                        Repayment.objects.create(
-                            loan=loan_obj,
-                            repayment_date=date,
-                            amount_paid=interest_to_apply + principal_to_apply,
-                            principal_paid=principal_to_apply,
-                            interest_paid=interest_to_apply
-                        )
 
-                        loan_obj.remaining_principal -= principal_to_apply
-                        loan_obj.remaining_principal = max(loan_obj.remaining_principal, Decimal('0.00'))
-                        loan_obj.update_status_based_on_principal()
-                        loan_obj.save()
-                    total_repayment = interest_to_apply + principal_to_apply
-                # Create deposit entry
+                    print(f"User Interest: {user_interest}")
+                    print(f"Interest Due: {interest_due}")
+
+                    # Validation
+                    if user_interest < interest_due:
+                        messages.error(request, "You must pay at least the total interest due.")
+                        return redirect('saving_home')
+
+                    # Apply interest
+                    interest_to_apply = min(user_interest, interest_due)
+                    interest_excess = user_interest - interest_due
+
+                    # Principal + any excess interest
+                    total_principal_input = user_principal + interest_excess
+                    principal_to_apply = min(total_principal_input, principal_due)
+                    principal_excess = total_principal_input - principal_to_apply
+
+                    print(f"Interest to Apply: {interest_to_apply}")
+                    print(f"Interest Excess: {interest_excess}")
+                    print(f"Principal to Apply: {principal_to_apply}")
+                    print(f"Principal Excess: {principal_excess}")
+
+                    if interest_to_apply > 0 or principal_to_apply > 0:
+                        repayment = Repayment.objects.create(
+                            loan=loan_obj,
+                            repayment_date=date_now,
+                            amount_paid=interest_to_apply + principal_to_apply,
+                            interest_paid=interest_to_apply,
+                            principal_paid=principal_to_apply,
+                            previous_principal=loan_obj.remaining_principal,
+                            remarks=remarks,
+                            remaining_principal=principal_excess,
+                        )
+                        total_repayment = repayment.amount_paid
+
+                # Saving Deposit
                 if user_saving > 0:
                     Deposit.objects.create(
                         customer=member,
                         amount=user_saving,
                         payment_method=payment_method,
                         remarks=remarks,
-                        date=date
+                        date=date_now
                     )
-                # Record other fee
+
+                # Other Fees
                 if other_fee > 0:
                     OtherFee.objects.create(
                         customer=member,
                         amount=other_fee,
                         remarks=remarks
                     )
-                # Create transaction (calculate saving_balance correctly)
+
+                # Transaction
                 total_amount = user_saving + user_interest + user_principal + other_fee
-                saving_balance = user_saving + principal_excess  # This includes excess repayment NOT applied to loan
+                saving_balance = user_saving + principal_excess
+
                 Transaction.objects.create(
                     member=member,
                     amount=total_amount,
@@ -465,22 +482,28 @@ def saving_add(request, member_id):
                     loan_repayment=principal_to_apply,
                     interest_paid=interest_to_apply,
                     payment_method=payment_method,
-                    date=date,
+                    date=date_now,
                     remarks=remarks
                 )
-                messages.success(
-                    request,
-                    f"Saved: Saving = {user_saving}, Interest = {user_interest} (Applied: {interest_to_apply}), "
-                    f"Principal = {user_principal} (+ Excess Interest {interest_excess}) → Applied: {principal_to_apply}, "
-                    f"Other Fee = {other_fee}, Saving Balance Recorded = {saving_balance}"
-                )
-                return redirect('saving_home')
+                if total_repayment == 0:
+                    messages.success(request, f"Saving: Rs. {user_saving} added successfully.")
+                    return redirect('saving_home')
+                else:
+                    messages.success(request,
+                        f"Saving: ₹{user_saving}\n"
+                        f"- Interest Paid: Rs. {interest_to_apply}\n"
+                        f"- Principal Paid: Rs. {principal_to_apply}\n"
+                    )
+                    return redirect('saving_home')
+
             except Exception as e:
                 print("Error during saving:", e)
-                messages.error(request, "An error occurred while saving.")
+                messages.error(request, "An error occurred while processing the saving.")
         else:
-            messages.error(request, "Invalid form submission.")
+            messages.error(request, "Invalid form data submitted.")
     else:
         form = SavingAddForm(member=member)
-    return render(request, 'saving_add.html', {'form': form, 'member': member, 'loan': loan})
+
+    return render(request, 'saving_add.html', {'form': form, 'member': member, 'loan': loan, 'interest_to_pay': interest_due})
+
 

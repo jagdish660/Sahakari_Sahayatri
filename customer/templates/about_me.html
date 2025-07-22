@@ -191,6 +191,9 @@ About Me
                 </tbody>
             </table>
         </div>
+        <div class="m-3">
+            <a href="{% url 'share_details' member.member_id %}" class="btn btn-primary">Details</a>
+        </div>
         {% else %}
             <p>No share transactions available.</p>
         {% endif %}

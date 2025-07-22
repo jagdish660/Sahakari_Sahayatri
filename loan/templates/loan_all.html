@@ -127,7 +127,15 @@ Loan History
             {% endif %}
         </ul>
     </nav>
-
+{% if request.user.is_staff or request.user.is_superuser %}
+<div class="button-container">
+    <a href="" class="btn-danger btn">Back</a>
+</div>
+{% else %}
+<div class="button-container">
+    <a href="{% url 'about_me' %}" class="btn-danger btn">Back</a>
+</div>
+{% endif %}
 </div>
 <style>
     .loan-card{

@@ -11,16 +11,13 @@ Edit details : {{form.first_name}} {{form.middle_name}} {{form.last_name}}
     <form method="post" action="{% url 'user_customer_update' id %}" class="form-member">
         {% csrf_token %}
         <div class="mb-2">
-            <label for="member_id">Member ID:</label>
-            <input type="text" id="member_id" name="member_id" value="{{id}}" class="form-control" disabled>
+            <label for="member_id">Member ID: </label><span class="fw-bold"> {{id}}</span>
         </div>
         <div class="mb-2">
-            <label for="first_name">Name: <span class="required-form" >*</span></label>
-            <input type="text" id="first_name" name="first_name" disabled value="{{form.first_name}} {{form.middle_name}} {{form.last_name}}" class="form-control" required>
+            <label for="first_name">Name: </label><span class="fw-bold"> {{form.name}}</span>
         </div>
         <div class="mb-2">
-            <label for="date_of_birth">Date of Birth: <span class="required-form" >*</span></label>
-            <input type="date" id="date_of_birth" disabled name="date_of_birth" value="{{ form.date_of_birth|date:'Y-m-d' }}" class="form-control" required>
+            <label for="date_of_birth">Date of Birth: </label><span class="fw-bold"> {{form.date_of_birth}}</span>
         </div>
         <div class="mb-2">
             <label for="address">Address: <span class="required-form" >*</span></label>
@@ -43,6 +40,8 @@ Edit details : {{form.first_name}} {{form.middle_name}} {{form.last_name}}
         </div>
     </form>
 </div>
-
+<div class="button-container">
+    <a href="{% url 'about_me' %}" class="btn btn-danger">Back</a>
+</div>
 
 {% endblock content %}

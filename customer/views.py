@@ -21,16 +21,11 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.conf import settings
 from collections import defaultdict
+from django.utils.timezone import now
 
 # Create views here.
 
 # /
-from collections import defaultdict
-from decimal import Decimal
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.utils.timezone import now
-
 @login_required(login_url='loginpage')
 def home(request):
     if request.user.is_staff or request.user.is_superuser:
@@ -156,7 +151,6 @@ def home(request):
         return redirect('user_home')
 
 
-
 #  /home/
 @login_required(login_url='loginpage')
 def user_home(request):
@@ -272,7 +266,6 @@ def user_home(request):
         # 'fiscal_remaining_balance_values': fiscal_remaining_balance_values,
     }
     return render(request, 'user_home_a.html', context)
-
 
  
 #  /member

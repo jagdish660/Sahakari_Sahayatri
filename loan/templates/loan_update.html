@@ -8,14 +8,14 @@ Loan Payment: {{ loan.customer.name }}
 <div class="details m-2">
     <h2>Update Loan Details</h2>
     <div class="info container">
-        <h4 class="text-center">{{ loan.customer.member_id }} - {{ name }}</h4>
+        <h4 class="text-center">{{ loan.customer.member_id }} - {{ loan.customer.name }}</h4>
     </div>
 
     <div class="m-2">
         <h5>Loan</h5>
         <p class="fw-bold">Loan amount: Rs {{ loan.amount }}</p>
         <p class="fw-bold">Remaining amount: Rs {{ loan.remaining_principal }}</p>
-        <p>Interest to pay: Rs {{ loan.interest_to_pay }}</p>        
+        <p>Interest to pay: Rs {{ interest_due }}</p>        
     </div>
 </div>
 
@@ -25,7 +25,7 @@ Loan Payment: {{ loan.customer.name }}
 
         <div class="mb-3">
             <label for="member_id" class="form-label">Member ID - Name:</label>
-            <input type="text" id="member_id" name="member_id" value="{{ loan.customer.member_id }} - {{ name }}" class="form-control" readonly>
+            <input type="text" id="member_id" name="member_id" value="{{ loan.customer.member_id }} - {{ loan.customer.name }}" class="form-control" readonly>
         </div>
 
         <div class="mb-3">
