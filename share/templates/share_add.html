@@ -7,10 +7,13 @@ Add Share: {{member.name}}
 
 {% block content %}
 
-<h2>Add Share for {{member.name}}</h2>   
+<!-- <h2>Add Share for {{member.name}}</h2>    -->
 
 <div class="form-div">
     <form method="post" action="" class="form-member">
+        <div class="text-center">
+            <h2 class="p-3">Add Share : {{member.name}}</h2>
+        </div>
         {% csrf_token %}
         <div class="mb-2">
             <label for="id">Member ID: </label>  <span class="fw-bold">  {{member.member_id}}</span>
@@ -25,12 +28,12 @@ Add Share: {{member.name}}
             <div class="form-text">Amount to purshase share</div>
         </div>
         <div class="mb-3 button-container">
-            <button type="submit" class="btn btn-md btn-primary" value="submit">Add</button>
+            <button type="submit" class="more-btn btn btn-md btn-primary" value="submit">Add</button>
         </div>
     </form>
 </div>
 <div class="button-container">
-    <a href="{% url 'share_home' %}" class="btn-danger btn">Back</a>
+    <a href="{% url 'share_home' %}" class="more-btn btn-danger btn">Back</a>
 </div>
 {% endblock content %}
 

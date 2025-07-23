@@ -27,6 +27,9 @@ Saving Interest:
 
 <!-- Collapsible form -->
 <div class="form-divv">
+    <div class="text-center">
+        <h2 class="p-3">Add Interest</h2>
+    </div>
     <div class="mb-2 form-div">
         <form action="{% url 'saving_interest' %}" method="post" class="form-member">
             {% csrf_token %}
@@ -43,6 +46,9 @@ Saving Interest:
             </div>    
         </form>
     </div>
+    <!-- <div class="button-container">
+        <a href="{% url 'saving_interest' %}" class="btn more-btn btn-md btn-danger">Back</a>
+    </div> -->
 </div>
 
 

@@ -14,6 +14,9 @@ Manage Saving: {{ member.first_name }} {{ member.middle_name }} {{ member.last_n
 
 <div class="form-div">
     <form method="post" action="" class="form-member">
+        <div class="text-center">
+            <h2 class="p-3">Add Saving</h2>
+        </div>
         {% csrf_token %}
         
         <!-- Member ID (read-only) -->

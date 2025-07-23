@@ -14,6 +14,7 @@ urlpatterns = [
     path('', customer.home, name='home'),
     path('home/', customer.user_home, name='user_home'),
     path('about_me/', customer.about_me, name='about_me'),
+    path('search/', customer.search_result, name='search_result'),
     
     path('member/', customer.member_home, name='customer_home'),
     path('member/add/', customer.member_add, name='customer_add'),

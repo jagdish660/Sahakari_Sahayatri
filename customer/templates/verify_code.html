@@ -6,9 +6,10 @@ Email Verification
 {% endblock title %}
 
 {% block content %}
-<div class="text-center"><h1 class="p-3">Email Verification</h1></div>
+
 <div class="form-div">
-    <form class="form-member" method="POST">
+    <form class="form-login" method="POST">
+        <div class="text-center"><h2 class="p-3">Email Verification</h2></div>
         {% csrf_token %}
         <div class="mb-3">
             <label class="form-label" for="code">Enter the verification code sent to your email:</label>

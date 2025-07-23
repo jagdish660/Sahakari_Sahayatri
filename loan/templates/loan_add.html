@@ -7,10 +7,12 @@ Add Loan
 
 {% block content %}
 
-<h2>Add Loan</h2>   
 
 <div class="form-div">
-    <form method="post" action="" class="form-member">
+    <form method="post" action="" class="form-login">
+        <div class="text-center">
+            <h2 class="p-3">Add Loan</h2>
+        </div>
         {% csrf_token %}
         <label for="customer">Select Customer:</label>
         <select name="customer_id" id="customer" required>
@@ -33,6 +35,8 @@ Add Loan
         </div>
     </form>
 </div>
-
+<div class="button-container">
+    <a href="{% url 'loan_home' %}" class="btn more-btn btn-md btn-danger">Back</a>
+</div>
 {% endblock content %}
 

@@ -42,7 +42,7 @@ Transaction
             <p>Current year savings: Rs. {{ current_year_savings }}</p>
             <p>Previous year savings: Rs. {{ previous_year_savings }}</p>
             <div>
-                <a href="{% url 'saving_details' member.member_id %}" class="btn-sm more-btn btn-success">Explore</a>
+                <a href="{% url 'saving_details' member.member_id %}" class="btn-md btn more-btn btn-success">Explore</a>
             </div>
         </div>
         
@@ -64,7 +64,7 @@ Transaction
                 <p class="fs-5 fw-bold">No active loans.</p>
             {% endif %} 
             <div>
-                <a href="{% url 'loan_home' %}" class="btn-sm more-btn btn-success">Explore</a>
+                <a href="{% url 'loan_home' %}" class="btn-md btn more-btn btn-success">Explore</a>
             </div>
         </div>
     </div>
@@ -76,7 +76,7 @@ Transaction
             <p>Current year shares: Rs. {{ current_year_shares }}</p>
             <p>Previous year shares: Rs. {{ previous_year_shares }}</p>
             <div>
-                <a href="{% url 'share_details' member.member_id %}" class="btn-sm more-btn btn-success">Explore</a>
+                <a href="{% url 'share_details' member.member_id %}" class="btn-md btn more-btn btn-success">Explore</a>
             </div>
         </div>
     </div>

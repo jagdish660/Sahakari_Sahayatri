@@ -6,6 +6,9 @@ Transaction
 {% endblock title %}
 
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{ yearly_data|json_script:"yearly-data" }}
+
 <div class="row justify-content-center m-3">
 
     <!-- Savings and Interest Graph -->
@@ -33,8 +36,6 @@ Transaction
     </div> -->
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{{ yearly_data|json_script:"yearly-data" }}
 
 <h2 class="p-3">Transactions</h2>
 <div class="row justify-content-center m-3">
@@ -45,7 +46,7 @@ Transaction
             <p>Total savings from previous year: Rs. {{current_year_savings}}</p>
             <p>Total savings of current year: Rs. {{previous_year_savings}}</p>
             <a href="{% url 'saving_home' %}">
-                <button class="btn btn-outline-success">Manage</button>
+                <button class="more-btn btn btn-outline-success">Manage</button>
             </a>
         </div>
     </div>  
@@ -56,7 +57,7 @@ Transaction
             <p>Total loan deployed from previous year: Rs. {{deployed_previous_year}}</p>
             <p>Total loan deployed of current year: Rs. {{deployed_current_year}}</p>
             <a href="{% url 'loan_home' %}">
-                <button class="btn btn-outline-success">Manage</button>
+                <button class="more-btn btn btn-outline-success">Manage</button>
             </a>
         </div>
     </div>  
@@ -70,7 +71,7 @@ Transaction
             <p>Total shares from previous year: Rs. {{current_year_shares}}</p>
             <p>Total shares of current year: Rs. {{previous_year_shares}}</p>
             <a href="{% url 'share_home' %}">
-                <button class="btn btn-outline-success">Manage</button>
+                <button class="more-btn btn btn-outline-success">Manage</button>
             </a>
         </div>
     </div>
@@ -81,7 +82,7 @@ Transaction
             <p>Total expenses from previous year: Rs. {{current_year_expenses}}</p>
             <p>Total expenses of current year: Rs. {{previous_year_expenses}}</p>
             <a href="{% url 'expenses_home' %}">
-                <button class="btn btn-outline-success">Manage</button>
+                <button class="more-btn btn btn-outline-success">Manage</button>
             </a>
         </div>
     </div>
@@ -104,7 +105,7 @@ Transaction
             <h4>Total members</h4>
             <p class="fs-3 fw-bold">{{total_members}}</p>
             <a href="{% url 'customer_home' %}">
-                <button class="btn btn-outline-success">Manage</button>
+                <button class="more-btn btn btn-outline-success">Manage</button>
             </a>
         </div>
     </div>

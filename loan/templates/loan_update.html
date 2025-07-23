@@ -21,6 +21,9 @@ Loan Payment: {{ loan.customer.name }}
 
 <div class="form-div container mt-4 mb-4">
     <form method="post" action="" class="form-member">
+        <div class="text-center">
+            <h2 class="p-3">Pay Loan</h2>
+        </div>
         {% csrf_token %}
 
         <div class="mb-3">
@@ -57,7 +60,9 @@ Loan Payment: {{ loan.customer.name }}
         </div>
     </form>
 </div>
-
+<div class="button-container">
+    <a href="{% url 'loan_home' %}" class="btn more-btn btn-md btn-danger">Back</a>
+</div>
 <!-- JavaScript to calculate total amount -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {

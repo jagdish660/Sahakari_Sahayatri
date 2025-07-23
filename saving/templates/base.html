@@ -83,10 +83,12 @@
                                 </li>
                         {% endif %}
                     </ul>
-                    <!-- <form class="nav-search d-flex" action="" method="GET">
+                    {% if request.user.is_staff or request.user.is_superuser%}
+                    <form class="nav-search d-flex" action="{% url 'search_result' %}" method="GET">
                         <input type="text" name="name" id="name" class="form-control text" placeholder="Search member" required>
                         <button type="submit" class="btn-sm mx-3 nav-link search-btn text-black">Search</button>
-                    </form> -->
+                    </form>
+                    {% endif %}
                 </div>
                 <!-- Setting Icon -->
                 {% if request.user.is_authenticated %}
@@ -208,7 +210,23 @@
     padding: 10px;
     border-radius: 5px;
 }
-
+.form-login{
+    width: 30vw;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding-top: 3vw;
+    padding-inline: 3vw;
+    background-color: #b4dbc0;
+    margin-bottom: 4vh;
+}
+.form-member label, .form-saving label, .form-loan label, .form-share label, .form-login label {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: large;
+}
+.form-member input, .form-loan input, .form-saving input, .form-share input, .form-login input {
+    border-radius: 2vw;
+    border: 1px solid #023340;
+}
 </style>
 
 <script>

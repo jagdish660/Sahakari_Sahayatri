@@ -7,10 +7,13 @@ Add Loan : {{member.name}}
 
 {% block content %}
 
-<h2>Add Loan</h2>   
+<!-- <h2>Add Loan</h2>    -->
 
 <div class="form-div">
     <form method="post" action="" class="form-member">
+        <div class="text-center">
+            <h2 class="p-3">Add Loan : {{member.name}}</h2>
+        </div>
         {% csrf_token %}
         <label for="customer">Select Customer:</label>
         <div class="mb-2">
@@ -34,6 +37,8 @@ Add Loan : {{member.name}}
         </div>
     </form>
 </div>
-
+<div class="button-container">
+    <a href="{% url 'customer_details' member.member_id %}" class="btn more-btn btn-md btn-danger">Back</a>
+</div>
 {% endblock content %}
 

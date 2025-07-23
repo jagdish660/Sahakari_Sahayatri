@@ -6,9 +6,9 @@
 {% endblock title %}
 
 {% block content %}
-  <h1 class="mb-4 text-center text-primary">Expenses Add</h1>
 <div class="form-div">
 <form method="post" action="{% url 'expenses_add' %}" class="form-member">
+    <h2 class="mb-4 text-center text-primary">Expenses Add</h2>
     {% csrf_token %}
     <div class="mb-2">
         <label for="category">Expenses Category: <span class="required-form">*</span></label>
@@ -43,12 +43,12 @@
         <input type="textarea" id="remarks" name="remarks" class="form-control">
     </div>
     <div class="mb-3 button-container">
-        <button type="submit" class="btn btn-sm btn-primary">Add Expense</button>
+        <button type="submit" class="more-btn btn btn-md btn-primary">Add Expense</button>
     </div>
 </form>
 </div>  
 <div class="button-container">
-    <a href="{% url 'expenses_home' %}" class="btn btn-danger btn-lg">Back</a>
+    <a href="{% url 'expenses_home' %}" class="more-btn btn btn-danger btn-md">Back</a>
 </div>
 
 

@@ -7,10 +7,13 @@ Add Share for Member
 
 {% block content %}
 
-<h2>Add Share for a Member</h2>   
+<!-- <h2>Add Share for a Member</h2>    -->
 
 <div class="form-div">
     <form method="post" class="form-member">
+        <div class="text-center">
+            <h2 class="p-3">Add Share</h2>
+        </div>
         {% csrf_token %}
         <div class="mb-2">
             <label for="member_id">Select Member:</label>
@@ -29,11 +32,11 @@ Add Share for Member
         </div>
 
         <div class="mb-3 button-container">
-            <button type="submit" class="btn btn-md btn-primary">Add</button>
+            <button type="submit" class="more-btn btn btn-md btn-primary">Add</button>
         </div>
     </form>
 </div>
 <div class="button-container">
-    <a href="{% url 'share_home' %}" class="btn-danger btn">Back</a>
+    <a href="{% url 'share_home' %}" class="more-btn btn-danger btn">Back</a>
 </div>
 {% endblock content %}

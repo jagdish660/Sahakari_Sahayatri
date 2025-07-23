@@ -37,31 +37,25 @@ def home(request):
         members = Member.objects.all()
 
         current_year = now().year
-
         # Initialize dicts once outside loops
         yearly_savings = defaultdict(Decimal)
         yearly_interest = defaultdict(Decimal)
         yearly_loans_deployed = defaultdict(Decimal)
         yearly_remaining_loan = defaultdict(Decimal)
-
         for d in savings:
             yearly_savings[d.date.year] += d.amount
-
         for i in interest:
             yearly_interest[i.date.year] += i.previous_interest_amount + i.current_interest_amount
-
         for l in loans:
             yearly_loans_deployed[l.start_date.year] += l.amount
             if l.status == 'active':
                 yearly_remaining_loan[l.start_date.year] += l.remaining_principal
-
         years = sorted(set(
             list(yearly_savings.keys()) +
             list(yearly_interest.keys()) +
             list(yearly_loans_deployed.keys()) +
             list(yearly_remaining_loan.keys())
         ))
-
         savings_list = [float(yearly_savings[y]) for y in years]
         interest_list = [float(yearly_interest[y]) for y in years]
         loans_list = [float(yearly_loans_deployed[y]) for y in years]
@@ -141,11 +135,9 @@ def home(request):
             'total_members': total_members,
 
             'balance_now': balance_now,
-
             # For Chart.js
             'yearly_data': yearly_data,
         }
-
         return render(request, 'home.html', context)
     else:
         return redirect('user_home')
@@ -267,6 +259,22 @@ def user_home(request):
         # 'fiscal_remaining_balance_values': fiscal_remaining_balance_values,
     }
     return render(request, 'user_home_a.html', context)
+
+ 
+#  /search/
+@login_required(login_url='loginpage')
+def search_result(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return redirect('user_home')
+    search_text = request.GET.get('name', '')
+    results = []
+    if search_text:
+        from django.contrib.auth.models import User
+        results = User.objects.filter(username__icontains=search_text)
+    return render(request, 'search_result.html', {
+        'search_text': search_text,
+        'results': results
+    })
 
  
 #  /member

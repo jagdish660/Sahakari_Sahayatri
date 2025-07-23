@@ -6,13 +6,13 @@ Member Update : {{form.name}}
 {% endblock title %}
 
 {% block content %}
-<h2>Update Member : ({{id}}) {{form.first_name}} {{form.middle_name}} {{form.last_name}}</h2>
+<!-- <h2 class="mx-3">Update Member</h2> -->
 <div class="form-div">
     <form method="post" action="{% url 'customer_update' id %}" class="form-member">
+        <div class="text-center"><h2 class="p-3">Update Member :  {{form.name}}</h2></div>
         {% csrf_token %}
         <div class="mb-2">
-            <label for="member_id">Member ID:</label>
-            <input type="text" id="member_id" name="member_id" value="{{id}}" class="form-control" disabled>
+            <label for="member_id">Member ID: </label> <span class="fw-bold">{{id}}</span>
         </div>
         <div class="mb-2">
             <label for="first_name">First Name: <span class="required-form" >*</span></label>
@@ -47,11 +47,13 @@ Member Update : {{form.name}}
             <input type="text" id="occupation" name="occupation" value="{{form.occupation}}" class="form-control">
         </div>  
         <div class="mb-3 button-container">
-            <button type="submit" class="btn btn-sm btn-primary" value="submit">Update Member</button>
+            <button type="submit" class="more-btn btn-md btn-primary" value="submit">Update Member</button>
         </div> 
     </form>
 </div>
 
-
+<div class="button-container">
+    <a href="{% url 'customer_home' %}" class="more-btn btn-danger btn-md btn">Back</a>
+</div>
 
 {% endblock content %}
