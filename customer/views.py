@@ -266,15 +266,47 @@ def user_home(request):
 def search_result(request):
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect('user_home')
-    search_text = request.GET.get('name', '')
+
+    search_text = request.GET.get('name', '').strip()
     results = []
+    result_id_matches = []
+
     if search_text:
-        from django.contrib.auth.models import User
+        # Match members where member_id contains the search text (if numeric)
+        if search_text.isdigit():
+            member_id_matches = Member.objects.filter(
+                member_id__icontains=search_text
+            ).select_related('user')
+
+            # Separate exact match and partial matches
+            exact_match = []
+            partial_matches = []
+
+            for member in member_id_matches:
+                if member.member_id == int(search_text):
+                    exact_match.append(member)
+                else:
+                    partial_matches.append(member)
+
+            # Combine with exact match first
+            result_id_matches = exact_match + partial_matches
+
+        # Search users by username
         results = User.objects.filter(username__icontains=search_text)
+        resulta = Member.objects.filter(address__icontains=search_text)
+
+        # Avoid duplicate if the same user appears in both (optional)
+        if result_id_matches:
+            member_user_ids = [member.user.id for member in result_id_matches]
+            results = results.exclude(id__in=member_user_ids)
+
     return render(request, 'search_result.html', {
         'search_text': search_text,
-        'results': results
+        'results': results,
+        'resulta': resulta,
+        'result_id': result_id_matches
     })
+
 
  
 #  /member
