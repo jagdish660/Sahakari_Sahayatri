@@ -148,115 +148,162 @@ def saving_details(request, member_id):
 # /saving/interest/ 
 @login_required(login_url='loginpage')
 def saving_interest(request):
-    if request.user.is_staff or request.user.is_superuser:
-        if request.method == 'POST':
-            try:
-                previous_rate = Decimal(request.POST.get('previous_rate'))
-                current_rate = Decimal(request.POST.get('current_rate'))
-
-                current_date = date.today()
-                fiscal_year = get_fiscal_year_starting_shrawan(current_date)
-                fiscal_year_start_date, fiscal_year_end_date = get_fiscal_year_start_end(fiscal_year)
-
-                customers = Member.objects.all()
-                success_count = 0
-                error_count = 0
-
-                for customer in customers:
-                    if not YearlyInterest.objects.filter(customer=customer, year=fiscal_year).exists():
-                        try:
-                            # Sum of deposits BEFORE fiscal year start
-                            prev_deposits = Deposit.objects.filter(
-                                customer=customer,
-                                date__lt=fiscal_year_start_date
-                            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-
-                            # Sum of interest credited BEFORE fiscal year start
-                            prev_interests = YearlyInterest.objects.filter(
-                                customer=customer,
-                                date__lt=fiscal_year_start_date
-                            ).aggregate(
-                                total=Sum(F('previous_interest_amount') + F('current_interest_amount'))
-                            )['total'] or Decimal('0.00')
-
-                            previous_saving = prev_deposits + prev_interests
-
-                            # Sum of deposits DURING the fiscal year
-                            curr_deposits = Deposit.objects.filter(
-                                customer=customer,
-                                date__gte=fiscal_year_start_date,
-                                date__lte=fiscal_year_end_date
-                            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-
-                            # Sum of interests DURING the fiscal year
-                            curr_interests = YearlyInterest.objects.filter(
-                                customer=customer,
-                                date__gte=fiscal_year_start_date,
-                                date__lte=fiscal_year_end_date
-                            ).aggregate(
-                                total=Sum(F('previous_interest_amount') + F('current_interest_amount'))
-                            )['total'] or Decimal('0.00')
-
-                            current_saving = curr_deposits + curr_interests
-
-                            # Calculate interest
-                            previous_interest = (previous_saving * previous_rate / Decimal('100')).quantize(Decimal('0.01'))
-                            current_interest = (current_saving * current_rate / Decimal('100')).quantize(Decimal('0.01'))
-                            interest_total = (previous_interest + current_interest).quantize(Decimal('0.01'))
-
-                            # Update saving balance
-                            balance_obj, _ = SavingBalance.objects.get_or_create(customer=customer)
-                            balance_obj.balance += interest_total
-                            balance_obj.save()
-
-                            # Log
-                            print(f"{fiscal_year}: {customer.name} - Prev Amt: {previous_saving}, Int: {previous_interest} ({previous_rate}%) | Curr Amt: {current_saving}, Int: {current_interest} ({current_rate}%)")
-
-                            # Save YearlyInterest
-                            YearlyInterest.objects.create(
-                                customer=customer,
-                                year=fiscal_year,
-                                previous_interest_rate=previous_rate,
-                                previous_interest_amount=previous_interest,
-                                current_interest_rate=current_rate,
-                                current_interest_amount=current_interest,
-                                remarks=f"Interest for FY {fiscal_year}"
-                            )
-
-                            # Log Transaction
-                            Transaction.objects.create(
-                                date=timezone.now(),
-                                member=customer,
-                                amount=interest_total,
-                                saving_balance=balance_obj.balance,  # Updated balance
-                                loan_repayment=0,
-                                interest_paid=interest_total,
-                                share=0,
-                                other_fee=0,
-                                payment_method="interest",
-                                remarks=f"Interest credited for FY {fiscal_year}",
-                            )
-
-                            success_count += 1
-
-                        except Exception as e:
-                            print(f"Error processing {customer.name}: {e}")
-                            error_count += 1
-
-                messages.success(request, f"Interest successfully added for {success_count} customers.")
-                if error_count:
-                    messages.warning(request, f"Failed to process {error_count} customers. Check server logs.")
-
-            except Exception as e:
-                messages.error(request, f"Invalid input: {e}")
-
-            return redirect('saving_interest')
-
-        return render(request, 'saving_yearly_interest.html')
-    else:
+    if not (request.user.is_staff or request.user.is_superuser):
         messages.error(request, "You're not allowed to perform this task.")
         return redirect('saving_home')
 
+    if request.method == 'POST':
+        try:
+            previous_rate = Decimal(request.POST.get('previous_rate'))
+            current_rate = Decimal(request.POST.get('current_rate'))
+
+            current_date = date.today()
+            fiscal_year = get_fiscal_year_starting_shrawan(current_date)
+            fiscal_year_start_date, fiscal_year_end_date = get_fiscal_year_start_end(fiscal_year)
+
+            customers = Member.objects.all()
+            success_count = 0
+            error_count = 0
+
+            for customer in customers:
+                if not YearlyInterest.objects.filter(customer=customer, year=fiscal_year).exists():
+                    try:
+                        prev_deposits = Deposit.objects.filter(
+                            customer=customer,
+                            date__lt=fiscal_year_start_date
+                        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+                        prev_interests = YearlyInterest.objects.filter(
+                            customer=customer,
+                            date__lt=fiscal_year_start_date
+                        ).aggregate(
+                            total=Sum(F('previous_interest_amount') + F('current_interest_amount'))
+                        )['total'] or Decimal('0.00')
+
+                        previous_saving = prev_deposits + prev_interests
+
+                        curr_deposits = Deposit.objects.filter(
+                            customer=customer,
+                            date__gte=fiscal_year_start_date,
+                            date__lte=fiscal_year_end_date
+                        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+                        curr_interests = YearlyInterest.objects.filter(
+                            customer=customer,
+                            date__gte=fiscal_year_start_date,
+                            date__lte=fiscal_year_end_date
+                        ).aggregate(
+                            total=Sum(F('previous_interest_amount') + F('current_interest_amount'))
+                        )['total'] or Decimal('0.00')
+
+                        current_saving = curr_deposits + curr_interests
+
+                        previous_interest = (previous_saving * previous_rate / Decimal('100')).quantize(Decimal('0.01'))
+                        current_interest = (current_saving * current_rate / Decimal('100')).quantize(Decimal('0.01'))
+                        interest_total = (previous_interest + current_interest).quantize(Decimal('0.01'))
+
+                        balance_obj, _ = SavingBalance.objects.get_or_create(customer=customer)
+                        balance_obj.balance += interest_total
+                        balance_obj.save()
+
+                        YearlyInterest.objects.create(
+                            customer=customer,
+                            year=fiscal_year,
+                            previous_interest_rate=previous_rate,
+                            previous_interest_amount=previous_interest,
+                            current_interest_rate=current_rate,
+                            current_interest_amount=current_interest,
+                            remarks=f"Interest for FY {fiscal_year}"
+                        )
+
+                        Transaction.objects.create(
+                            date=timezone.now(),
+                            member=customer,
+                            amount=interest_total,
+                            saving_balance=balance_obj.balance,
+                            loan_repayment=0,
+                            interest_paid=interest_total,
+                            share=0,
+                            other_fee=0,
+                            payment_method="interest",
+                            remarks=f"Interest credited for FY {fiscal_year}",
+                        )
+
+                        success_count += 1
+
+                    except Exception as e:
+                        print(f"Error processing {customer.name}: {e}")
+                        error_count += 1
+
+            messages.success(request, f"Interest successfully added for {success_count} customers.")
+            if error_count:
+                messages.warning(request, f"Failed to process {error_count} customers. Check server logs.")
+
+        except Exception as e:
+            messages.error(request, f"Invalid input: {e}")
+
+        return redirect('saving_interest')
+
+    # 🟢 Handle GET request: Show historical summary for all FYs
+    all_years = YearlyInterest.objects.values_list('year', flat=True).distinct().order_by('-year')
+    customers = Member.objects.all()
+    interest_summary = []
+
+    for fiscal_year in all_years:
+        fiscal_year_start_date, fiscal_year_end_date = get_fiscal_year_start_end(fiscal_year)
+
+        total_pre_balance = Decimal('0.00')
+        total_post_balance = Decimal('0.00')
+        total_pre_interest = Decimal('0.00')
+        total_post_interest = Decimal('0.00')
+        total_interest_sum = Decimal('0.00')
+
+        for customer in customers:
+            interest = YearlyInterest.objects.filter(customer=customer, year=fiscal_year).first()
+            if interest:
+                try:
+                    pre_deposits = Deposit.objects.filter(
+                        customer=customer,
+                        date__lt=fiscal_year_start_date
+                    ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+                    pre_interests = YearlyInterest.objects.filter(
+                        customer=customer,
+                        date__lt=fiscal_year_start_date
+                    ).aggregate(
+                        total=Sum(F('previous_interest_amount') + F('current_interest_amount'))
+                    )['total'] or Decimal('0.00')
+
+                    pre_balance = pre_deposits + pre_interests
+
+                    post_balance_obj = SavingBalance.objects.filter(customer=customer).first()
+                    post_balance = post_balance_obj.balance if post_balance_obj else Decimal('0.00')
+                    
+                    total_interest = interest.previous_interest_amount + interest.current_interest_amount
+
+                    total_pre_balance += pre_balance
+                    total_post_balance += post_balance-pre_balance
+                    total_pre_interest += interest.previous_interest_amount
+                    total_post_interest += interest.current_interest_amount
+                    total_interest_sum += total_interest
+
+                except Exception as e:
+                    print(f"Error summarizing {customer.name} for FY {fiscal_year}: {e}")
+
+        interest_summary.append({
+            'year': fiscal_year,
+            'pre_balance': total_pre_balance,
+            'post_balance': total_post_balance,
+            'pre_interest': total_pre_interest,
+            'post_interest': total_post_interest,
+            'total_interest': total_interest_sum,
+        })
+
+    context = {
+        'interest_records': interest_summary
+    }
+
+    return render(request, 'saving_yearly_interest.html', context)
 
 # /saving/add/<int:member_id>/
 @login_required(login_url='loginpage')
@@ -278,9 +325,27 @@ def saving_add(request, member_id):
                     other_fee = form.cleaned_data.get('other_fee') or Decimal('0.00')
                     payment_method = form.cleaned_data.get('payment_method')
                     remarks = form.cleaned_data.get('remarks')
+                    repayment = request.POST.get('repayment')  # it is checkbox if it is not selected then perform Deposit action only excluding other else perform full operation
                     date_now = timezone.now()
                     if not user_saving:
                         messages.error(request, "You didn't entered saving amount.")
+                        return redirect('saving_home')
+                    if not repayment:
+                        # Checkbox is NOT selected → proceed to save deposit
+                        saving_amount = form.cleaned_data['saving']
+                        other_fee = form.cleaned_data.get('other_fee', 0)
+                        payment_method = form.cleaned_data['payment_method']
+                        remarks = form.cleaned_data.get('remarks', '')
+
+                        # Example logic to save deposit
+                        Deposit.objects.create(
+                            customer=member,
+                            amount=user_saving,
+                            payment_method=payment_method,
+                            remarks=remarks,
+                            date=date_now
+                        )
+                        messages.success(request, "Saving recorded successfully.")
                         return redirect('saving_home')
                     interest_to_apply = Decimal('0.00')
                     principal_to_apply = Decimal('0.00')
@@ -296,8 +361,8 @@ def saving_add(request, member_id):
                         # interest_due = interest_to_pay(loan_obj)
                         principal_due = loan_obj.remaining_principal
 
-                        print(f"User Interest: {user_interest}")
-                        print(f"Interest Due: {interest_due}")
+                        # print(f"User Interest: {user_interest}")
+                        # print(f"Interest Due: {interest_due}")
 
                         # Validation
                         if user_interest < interest_due:
@@ -377,7 +442,7 @@ def saving_add(request, member_id):
 
                 except Exception as e:
                     print("Error during saving:", e)
-                    messages.error(request, "An error occurred while processing the saving.")
+                    messages.error(request, f"An error occurred while processing the saving.{e}")
             else:
                 messages.error(request, "Invalid form data submitted.")
         else:
@@ -391,4 +456,42 @@ def saving_add(request, member_id):
         return redirect('saving_home')
 
 
+# /saving/refund/<int:id>
+def saving_refund(request, id):
+    if request.user.is_staff or request.user.is_superuser:
+        try:
+            member = Member.objects.get(member_id=id)
+        except Member.DoesNotExist:
+            messages.error(request, "Member not found.")
+            return redirect('saving_home')
+        if request.method == "POST":
+            amount_refunded = request.POST.get('refund_amount')
+            payment_method = request.POST.get('payment_method')
+            remarks = request.POST.get('remarks')
+            refund_date = timezone.now()
+            if not amount_refunded:
+                messages.error(request, "You must provide an amount to refund.")
+                return redirect('saving_home')
+            try:
+                amount_refunded = Decimal(amount_refunded)
+            except:
+                messages.error(request, "Invalid refund amount.")
+                return redirect('saving_home')
+            try:
+                SavingRefund.objects.create(
+                    customer=member,
+                    amount_refunded=amount_refunded,
+                    payment_method=payment_method,
+                    refund_date=refund_date,
+                    remarks=remarks,
+                )
+                messages.success(request, f"Rs. {amount_refunded} refunded successfully for {member.name}")
+                return redirect('saving_home')
+            except Exception as e:
+                messages.error(request, "Error occurred while processing refund.")
+                return redirect('user_home')
+        return render(request, 'saving_refund.html', {'member': member})
+    else:
+        messages.error(request, "You're not allowed to perform this task.")
+        return redirect('saving_home')
 

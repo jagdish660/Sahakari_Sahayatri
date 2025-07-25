@@ -13,18 +13,6 @@ Saving Interest:
     <a href="" id="collapsible" class="btn btn-sm btn-info m-2">Add Saving Interest</a>
 </div>
 
-
-
-<!-- Background Blur Overlay -->
-<div id="overlay-blur"></div>
-{% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
-
 <!-- Collapsible form -->
 <div class="form-divv">
     <div class="text-center">
@@ -44,6 +32,9 @@ Saving Interest:
             <div class="button-container">
                 <button type="submit" class="btn btn-md btn-primary">Add</button>
             </div>    
+            <div class="button-container">
+                <a href="{% url 'saving_interest' %}" class="btn more-btn btn-md btn-danger">Back</a>
+            </div>
         </form>
     </div>
     <!-- <div class="button-container">
@@ -53,35 +44,39 @@ Saving Interest:
 
 
     <div class="table-responsive">
-        <table class="table table-bordered table-striped table-hover text-center table-success">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Fiscal Year</th>
-                    <th>Pre Balance (Rs)</th>
-                    <th>Post Balance (Rs)</th>
-                    <th>Previous Interest (Rs)</th>
-                    <th>Current Interest (Rs)</th>
-                    <th>Total Interest (Rs)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for interest in interest_data %}
-                <tr>
-                    <td>{{ interest.year }}</td>
-                    <td>Rs {{ interest.pre_balance }}</td>
-                    <td>Rs {{ interest.post_balance }}</td>
-                    <td>Rs {{ interest.pre_interest }}</td>
-                    <td>Rs {{ interest.post_interest }}</td>
-                    <td><strong>Rs {{ interest.total_interest }}</strong></td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">No interest data available for this member.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover text-center table-success">
+        <thead class="thead-dark">
+            <tr>
+                <th>Fiscal Year</th>
+                <th>Pre Balance (Rs)</th>
+                <th>Post Balance (Rs)</th>
+                <th>Previous Interest (Rs)</th>
+                <th>Current Interest (Rs)</th>
+                <th>Total Interest (Rs)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for interest in interest_records %}
+            <tr>
+                <td>{{ interest.year }}</td>
+                <td>Rs. {{ interest.pre_balance|floatformat:2 }}</td>
+                <td>Rs. {{ interest.post_balance|floatformat:2 }}</td>
+                <td>Rs. {{ interest.pre_interest|floatformat:2 }}</td>
+                <td>Rs. {{ interest.post_interest|floatformat:2 }}</td>
+                <td><strong>Rs. {{ interest.total_interest|floatformat:2 }}</strong></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No interest data available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</div>
+
 </div>
 
 

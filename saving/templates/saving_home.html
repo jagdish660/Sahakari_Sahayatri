@@ -57,8 +57,9 @@ Savings
                         <td>Rs {{ customer.total_refunded|floatformat:2 }}</td>
                         <td>Rs {{ customer.total_saving|floatformat:2 }}</td>
                         <td>
-                            <a class="btn btn-sm btn-outline-primary m-1" href="{% url 'saving_details' customer.id %}">View</a>
-                            <a class="btn btn-sm btn-outline-success m-1" href="{% url 'saving_add' customer.id %}">Add</a>
+                            <a class="btn btn-sm btn-success m-1" href="{% url 'saving_add' customer.id %}">Add</a>
+                            <a class="btn btn-sm btn-primary m-1" href="{% url 'saving_details' customer.id %}">View</a>
+                            <a class="btn btn-sm btn-warning m-1" href="{% url 'saving_refund' customer.id %}">Refund</a>
                         </td>
                     </tr>
                 {% endfor %}

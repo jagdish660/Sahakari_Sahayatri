@@ -28,13 +28,15 @@ Search Result
                 <h5 class="fw-bold mt-4">Search Result by Name:</h5>
                 <ul class="list-group mt-3">
                     {% for result in results %}
-                        <li class="list-group-item">
-                            <a href="{% url 'customer_details' result.member_profile.member_id %}">
-                                <h5 class="fw-bold">{{ result.member_profile.name }},
-                                    <span class="fw-normal">{{ result.member_profile.address }}</span>
-                                </h5>
-                            </a>
-                        </li>
+                        {% if result.member_profile and result.member_profile.member_id %}
+                            <li class="list-group-item">
+                                <a href="{% url 'customer_details' result.member_profile.member_id %}">
+                                    <h5 class="fw-bold">{{ result.member_profile.name }},
+                                        <span class="fw-normal">{{ result.member_profile.address }}</span>
+                                    </h5>
+                                </a>
+                            </li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             {% endif %}
@@ -64,7 +66,7 @@ Search Result
         <p class="text-muted">Please enter a search term.</p>
     {% endif %}
 </div>
-<div class="button-container">
+<!-- <div class="button-container">
     <a href="{% url 'home' %}" class="btn more-btn btn-danger">Back</a>
-</div>
+</div> -->
 {% endblock content %}

@@ -9,6 +9,7 @@
     color: black;
     padding: 5px;
 }
+
 .links:hover {
     text-decoration: underline;
     color:rgb(51, 49, 49);
@@ -106,17 +107,6 @@
     color: white;
 }
 
-/* Footer text alignment */
-/* .footer-text {
-    width: 90%;
-    text-align: justify;
-    text-justify: inter-word;
-} */
-
-/* .nav-search {
-    margin-right: 20px;
-} */
-
 .nav-search .btn{
     text-decoration: none;
     font-weight: 500;
@@ -193,7 +183,6 @@
     right: 10px;
     z-index: 1000;
 }
-
 
 .settings-popup.show {
     display: block;
@@ -293,7 +282,7 @@ border: 2px solid rgb(206, 206, 206);
 width: 120px;  
 height: 40px;
 font-weight: bolder;
-
+text-decoration: none;
 }
 
 .neu-button:hover {
@@ -316,7 +305,7 @@ content: "More";
 font-size: 14px;
 }
 
-.college-name a{
+.text-center a{
     text-decoration: none;
     color: #000;
     font-weight: 750;
@@ -334,43 +323,9 @@ font-size: 14px;
     margin-left: 10px;
 }
 
-/* .btn{
-    width: 7vw;
-    border-radius: 5%;
-    margin: 10px;
-} */
-
 .explore{
     width: 100%;
 }
-/* 
-.view-div {
-    background-color: blue;
-    border-radius: 5%;
-    width: fit-content;
-    padding-inline: 5px;
-    padding-block: 2px;
-    display: flex;
-    justify-content: center;
-    text-align: center;
-} */
-
-/* .view-more {
-    text-decoration: none;
-    color: black;
-    font-size: 1rem;
-    display: inline-block;
-    padding: 5px 10px;
-    font-weight: bold;
-    border-radius: 5px;
-}
-
-.view-div:hover, .view-more:hover {
-    background-color: rgb(64, 64, 194);
-    color: black;
-    font-weight: bold;
-    font-size: 1rem;
-} */
 
 .more-btn{
     white-space: nowrap;
@@ -383,21 +338,6 @@ font-size: 14px;
     justify-content: center;
     align-items: stretch;
 }
-
-.placement-college, .featured-college {
-    background-color: rgb(200, 228, 200);
-    border-radius: 8px;width: 100%;
-    min-height: 250px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #ddd;
-}
-
 
 .cardd{
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -511,7 +451,7 @@ font-size: 14px;
     background-color: #e0e0e0;
 }
 
-.mail-college, .mail-student, .mail-user{
+.mail-member{
      text-decoration: none;
     color: #000;
     display: inline-block;
@@ -521,12 +461,12 @@ font-size: 14px;
     white-space: nowrap;
 }
 
-.mail-college:hover, .mail-student:hover, .mail-user:hover{
+.mail-member:hover{
     color: #3f3f3f;
 }
 
 
-.card-college {
+.card-sahakari {
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -535,21 +475,10 @@ font-size: 14px;
     background-color: #b4e6cd;
 }
 
-.card-college:hover{
+.card-sahakari:hover{
     background-color: #8cd8b2;
 }
 
-.explore-btn{
-    text-decoration: none;
-    color: black;
-    background-color: #5eaf89;
-    font-weight: 500;
-}
-
-.explore-btn:hover{
-    color: black;
-    background-color: #389268;
-}
 
 .card-body {
     display: flex;
@@ -557,159 +486,6 @@ font-size: 14px;
     justify-content: space-between;
     padding: 1rem;
     color: #000;
-}
-
-.mail-college {
-    display: inline-block;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.card-college .logo-container {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.card-college .logo-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.card-body h6 {
-    font-size: 1.25rem;
-    font-weight: bold;
-}
-
-.col-logodiv{
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    margin-top: 25px;
-    margin-inline-start: 25px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex: 0 0 auto;
-}
-
-.name-logo {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.col-logodiv-home{
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    margin-top: 10px;
-    margin-inline-start: 10px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-.col-logo{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 1px solid rgb(112, 112, 112);
-}
-
-.col-logodiv-about{
-    width: 150px;
-    height: 150px;
-    border-radius: 10%;
-    margin-top: 25px;
-    margin-inline-start: 25px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex: 0 0 auto;
-}
-
-.col-logo-about{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10%;
-    border: 1px solid rgb(112, 112, 112);
-}
-
-.image-container-wrapper {
-  height: 80%;
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-}
-
-.image-container {
-  position: relative;
-  width: 100%;
-  height: 80%;
-  padding-bottom: 56.25%;
-}
-
-.image-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  padding: 10px 0;
-  z-index: 2;
-}
-
-.college-ranking {
-  color: white;
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 0;
-}
-
-.college-picture{
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.data-head{
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-.data{
-    font-size: 1rem;
-    font-weight: bold;
-    padding-bottom: 20px;
-}
-
-.college-name {
-    flex: 1;
-    text-align: center;
-}
-
-.college-name h2 {
-    margin: 0;
-    font-weight: bold;
 }
 
 .contact-img, .contact-imgg{
@@ -788,6 +564,23 @@ font-size: 14px;
     justify-content: space-between;
 }
 
+.active-loan {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    height: fit-content; 
+    width: fit-content;
+    background-color: #1dd469ff; 
+    color: white; 
+    padding: 2px 10px;
+    margin-bottom: 2px;
+    border-radius: 5px;
+    font-weight: 400;
+    font-size: 10px;
+    text-align: center;
+}
+
 @keyframes timerAnimation {
     0% {
         width: 100%;
@@ -807,9 +600,19 @@ font-size: 14px;
     border-color: #f5c6cb;
 }
 
+.alert-warning {
+    background-color: #f8f6d7;
+    border-color: #ecf5c6;
+}
+
 .timer-line[data-type="success"] {
     background-color: #28a745;
 }
+
+.timer-line[data-type="warning"] {
+    background-color: #afb833;
+}
+
 
 .timer-line[data-type="error"] {
     background-color: #dc3545;
@@ -885,14 +688,6 @@ font-size: 14px;
 .supreme{
     color: black;
     font-weight: 750;
-}
-
-.register-college-student{
-    margin-inline-start: 5vw;
-}
-
-.about-container{
-    margin-inline-start: 4vw;
 }
 
 html {
@@ -982,20 +777,12 @@ body {
         height: 100%;
     }
 
-    .featured-college {
-        min-height: 350px;
-    }
 }
 
 @media (max-width: 768px) {
     .settings-popup {
         width: 80vw;
         max-width: 350px;
-    }
-
-    .col-logodiv-home {
-        width: 70px;
-        height: 70px;
     }
 
     .navbar {
@@ -1013,12 +800,12 @@ body {
         font-size: 1rem;
     }
 
-    .form-college, .form-student, .form-user {
+    .form-member {
         width: 90%;
         padding: 2vw;
     }
 
-    .form-college input, .form-student input, .form-user input {
+    .form-member input {
         width: 100%;
     }
 
@@ -1029,12 +816,7 @@ body {
         padding: 10px;
     }
 
-    .card-college {
-        flex-direction: column;
-        padding: 10px;
-    }
-
-    .card-college .logo-container {
+    .logo-container {
         width: 80px;
         height: 80px;
     }
@@ -1057,15 +839,6 @@ body {
         padding-bottom: 56.25%;
     }
 
-    .college-picture {
-        width:100%;
-        object-position: center;
-    }
-
-    .image-overlay, .college-ranking{
-        width:100%;
-    }
-
     .alert {
         width: 70vw;
         max-width: 70vw;
@@ -1079,19 +852,6 @@ body {
     .col-logodiv {
         width: 100px;
         height: 100px;
-    }
-
-    .college-footer {
-        text-align: center;
-    }
-
-    .contact-location {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .featured-college {
-        min-height: 300px;
     }
 
     .footer-link{
@@ -1210,6 +970,7 @@ body {
         height:35%;
         width:100%;
     }
+
     .transaction-card canvas {
         max-height: 250px;
     }
@@ -1248,8 +1009,7 @@ body {
   background-color: rgb(220, 252, 233);
 }
 
-.dropdown-success-link:hover,
-.dropdown-success-bg .dropdown-item:hover {
+.dropdown-success-link:hover, .dropdown-success-bg .dropdown-item:hover {
   background-color: rgb(25, 135, 84) !important;
   color: white !important;
 }
@@ -1293,7 +1053,6 @@ body {
   }
 }
 
-
 .transaction-card {
     height: 100%;
     border: 1px solid #ccc;
@@ -1303,15 +1062,10 @@ body {
     overflow: hidden;
 }
 
-
 .transaction-card canvas {
     width: 100% !important;
     height: auto !important;
     max-height: 400px;
     display: block;
 }
-
-
-
-
 

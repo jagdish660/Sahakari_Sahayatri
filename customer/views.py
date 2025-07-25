@@ -50,6 +50,10 @@ def home(request):
             yearly_loans_deployed[l.start_date.year] += l.amount
             if l.status == 'active':
                 yearly_remaining_loan[l.start_date.year] += l.remaining_principal
+        deployed_test=Decimal('0.00')
+        for l in loans:
+            if l.status =='active':
+                deployed_test += l.amount
         years = sorted(set(
             list(yearly_savings.keys()) +
             list(yearly_interest.keys()) +
@@ -87,12 +91,12 @@ def home(request):
         previous_year_savings = total_savings - current_year_savings
 
         total_shares = sum(s.share_amount for s in share_balances)
-        current_year_shares = sum(s.share_amount for s in share_balances if s.purchase_date.year == current_year)
-        previous_year_shares = total_shares - current_year_shares
+        previous_year_shares = sum(s.share_amount for s in share_balances if s.purchase_date.year == current_year)
+        current_year_shares = total_shares - previous_year_shares
 
         total_members = members.count()
         principal_paid = total_deployed - remaining_principal
-        balance_now = total_savings - principal_paid + total_shares - total_expenses
+        balance_now = total_savings - remaining_principal + total_shares - total_expenses
 
         # Prepare JSON serializable data for Chart.js
         yearly_data = []
@@ -110,6 +114,8 @@ def home(request):
             'total_deployed': total_deployed,
             'deployed_current_year': deployed_current_year,
             'deployed_previous_year': deployed_previous_year,
+
+            'deployed_test': deployed_test,
 
             'expenses': expenses,
             'total_expenses': total_expenses,
@@ -314,7 +320,7 @@ def search_result(request):
 def member_home(request ):
     if request.user.is_staff or request.user.is_superuser:
         customers = Member.objects.all()
-        paginator = Paginator(customers,25) 
+        paginator = Paginator(customers,20) 
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         
@@ -650,6 +656,9 @@ def member_add(request):
 
                         <p>Please log in using the above credentials. For security reasons, we recommend changing your password after your first login.</p>
 
+                        <p>Here's our link: </p>
+                        <p>CLICK HERE : https://sahakarisahayatri.pythonanywhere.com</p>
+                        
                         <p>If you did not request this account, please contact our support team immediately.</p>
 
                         <br>

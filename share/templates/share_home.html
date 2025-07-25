@@ -35,12 +35,12 @@ Share Home
             {% for sh in page_obj %}
             <tr class="align-middle text-center">
                 <td>{{ forloop.counter|add:page_obj.start_index|add:"-1" }}.</td>
-                <td><a href="#" class="links text-decoration-none text-black fw-bold">{{ sh.customer.name }}</a></td>
+                <td><a href="{% url 'customer_details' sh.customer.member_id %}" class="links text-decoration-none text-black fw-bold">{{ sh.customer.name }}</a></td>
                 <td>{{ sh.customer.address }}</td>
                 <td>Rs. {{ sh.balance|floatformat:2 }}</td>
                 <td>
                     <a href="{% url 'share_details' sh.customer.member_id %}" class="btn btn-sm btn-outline-primary m-1">View</a>
-                    <a href="{% url 'share_add' sh.customer.member_id %}" class="btn btn-sm btn-outline-success m-1">Add</a>
+                    <!-- <a href="{% url 'share_add' sh.customer.member_id %}" class="btn btn-sm btn-outline-success m-1">Add</a> -->
                     <a href="{% url 'share_refund' sh.customer.member_id %}" class="btn btn-sm btn-outline-danger m-1">Refund</a>
                 </td>
             </tr>

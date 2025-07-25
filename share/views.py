@@ -22,10 +22,10 @@ def share_home(request):
         shares = ShareCapital.objects.select_related('customer').all().order_by('-purchase_date')
         total_shares = sum(share.share_amount for share in shares)
         current_year = timezone.now().year
-        current_year_shares = sum(
+        previous_year_shares = sum(
             share.share_amount for share in shares if share.purchase_date.year == current_year
         )
-        previous_year_shares = total_shares - current_year_shares
+        current_year_shares = total_shares - previous_year_shares
         members = Member.objects.all()
         share = ShareBalance.objects.select_related('customer').all().order_by('-last_updated')
         paginator = Paginator(share, 25)
@@ -79,7 +79,7 @@ def share_add(request, id):
 
             except Exception as e:
                 messages.error(request, f"Error occurred: {e}")
-                print(e)
+                
                 return redirect('customer_details', member_id=member.member_id)
 
         return render(request, 'share_add.html', {'member': member})

@@ -2,6 +2,7 @@ from django.db import models
 from datetime import date
 from django.contrib.auth.models import User
 from decimal import Decimal
+from django.core.exceptions import ValidationError
 
 class Member(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='member_profile')
@@ -9,7 +10,7 @@ class Member(models.Model):
     first_name = models.CharField(max_length=30, blank=False)
     middle_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=False)
-    email = models.EmailField(unique=True, blank=True)
+    email = models.EmailField(blank=True, null=True)
     phone_number = models.CharField(max_length=15, unique=True, blank=True)
     address = models.TextField(blank=False)
     date_of_birth = models.DateField(blank=True, null=True)
@@ -31,6 +32,14 @@ class Member(models.Model):
         super().save(*args, **kwargs)
     def __str__(self):
         return f"({self.member_id}) - {self.name}"
+    def clean(self):
+        # Enforce email uniqueness only if it's provided
+        if self.email:
+            existing = Member.objects.filter(email__iexact=self.email)
+            if self.pk:
+                existing = existing.exclude(pk=self.pk)
+            if existing.exists():
+                raise ValidationError({'email': 'This email is already in use.'})
     class Meta:
         ordering = ['member_id']  # Ascending order
         # ordering = ['-member_id']  # For descending order

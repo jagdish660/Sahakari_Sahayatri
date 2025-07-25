@@ -43,8 +43,8 @@ Transaction
         <div class="card transaction-card text-center p-3">
             <h4>Total Saving</h4>
             <p class="fs-3 fw-bold">Rs. {{total_savings}}</p>
-            <p>Total savings from previous year: Rs. {{current_year_savings}}</p>
-            <p>Total savings of current year: Rs. {{previous_year_savings}}</p>
+            <p>Total savings from previous year: Rs. {{previous_year_savings}}</p>
+            <p>Total savings of current year: Rs. {{current_year_savings}}</p>
             <a href="{% url 'saving_home' %}">
                 <button class="more-btn btn btn-outline-success">Manage</button>
             </a>
@@ -54,6 +54,7 @@ Transaction
         <div class="card transaction-card text-center p-3">
             <h4>Total Loan</h4>
             <p class="fs-3 fw-bold">Rs. {{total_deployed}}</p>
+            <p class="active-loan fw-bold fs-5 text-center">Active loan: {{deployed_test}}</p>
             <p>Total loan deployed from previous year: Rs. {{deployed_previous_year}}</p>
             <p>Total loan deployed of current year: Rs. {{deployed_current_year}}</p>
             <a href="{% url 'loan_home' %}">
@@ -303,6 +304,23 @@ new Chart(ctxCombined, {
     border: 1px solid #ccc;
     border-radius: 10px;
 }
+.active-loan {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    height: fit-content; 
+    width: fit-content;
+    background-color: #1dd469ff; 
+    color: white; 
+    padding: 2px 10px;
+    margin-bottom: 2px;
+    border-radius: 5px;
+    font-weight: 400;
+    font-size: 10px;
+    text-align: center;
+}
+
 </style>
 
 {% endblock content %}

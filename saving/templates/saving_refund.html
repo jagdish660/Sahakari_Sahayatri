@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Manage Saving: {{ member.name }}
+{% endblock title %}
+
+{% block content %}
+<h2>Manage Saving for Member ({{ member.member_id }})</h2>
+
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<div class="form-div">
+    <form method="post" action="" class="form-member">
+        <div class="text-center">
+            <h2 class="p-3">Refund Saving</h2>
+        </div>
+        {% csrf_token %}
+        
+        <!-- Member ID (read-only) -->
+        <div class="mb-2">
+            <label>Member ID:</label>
+            <span class="fw-bold">{{ member.member_id }}</span>
+        </div>
+
+        <!-- Name (read-only) -->
+        <div class="mb-2">
+            <label>Name:</label>
+            <span class="fw-bold">{{ member.name }}</span>
+        </div>
+
+        <!-- Refund Amount -->
+        <div class="mb-2">
+            <label for="id_saving">Amount to Refund: la</label>
+            <input type="number" name="refund_amount" id="refund_amount" class="form-control">
+        </div>
+
+        <!-- Payment Method -->
+        <div class="mb-2">
+            <label for="id_payment_method">Payment Method:</label>
+            <select name="payment_method" id="payment_method" >
+                <option value="cash" selected>Cash</option>
+                <option value="cheque">Cheque</option>
+                <option value="bank_transfer">Bank Transfer</option>
+            </select>
+        </div>
+
+
+        <!-- Remarks -->
+        <div class="mb-2">
+            <label for="id_remarks">Remarks:</label>
+            <textarea class="form-control"></textarea>
+        </div>
+
+        <!-- Submit -->
+        <div class="mb-3 button-container">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+</div>
+<div class="button-container">
+    <a href="{% url 'saving_home' %}" class="btn btn-danger">Back</a>
+</div>
+
+
+{% endblock content %}

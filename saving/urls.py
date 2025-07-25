@@ -9,4 +9,5 @@ urlpatterns = [
     path('add/<int:member_id>/', saving.saving_add, name='saving_add'),
     # path('saving/interest/summary', saving.saving_yearly_interest, name='saving_interest_yearly'),
     path('interest/', saving.saving_interest, name='saving_interest'),
+    path('refund/<int:id>/', saving.saving_refund, name='saving_refund'),
 ]

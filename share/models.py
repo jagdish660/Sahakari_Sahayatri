@@ -11,6 +11,8 @@ class ShareCapital(models.Model):
 
     def __str__(self):
         return f"{self.customer} | {self.share_amount} shares on {self.purchase_date}"
+    class Meta:
+        ordering = ['-purchase_date']
 
 class ShareRefund(models.Model):
     customer = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='share_refunds')
