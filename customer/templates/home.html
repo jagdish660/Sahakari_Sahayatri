@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-Transaction
+Sahakari Sahayatri
 {% endblock title %}
 
 {% block content %}
@@ -68,9 +68,9 @@ Transaction
     <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
         <div class="card transaction-card text-center p-3">
             <h4>Total Share</h4>
-            <p class="fs-3 fw-bold">Rs. {{total_shares}}</p>
-            <p>Total shares from previous year: Rs. {{current_year_shares}}</p>
-            <p>Total shares of current year: Rs. {{previous_year_shares}}</p>
+            <p class="fs-3 fw-bold">Rs. {{total_shares|floatformat:2}}</p>
+            <p>Total shares from previous year: Rs. {{current_year_shares|floatformat:2}}</p>
+            <p>Total shares of current year: Rs. {{previous_year_shares|floatformat:2}}</p>
             <a href="{% url 'share_home' %}">
                 <button class="more-btn btn btn-outline-success">Manage</button>
             </a>

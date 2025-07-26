@@ -30,7 +30,7 @@ def get_balance_now():
     total_savings = sum(d.amount for d in savings) + total_interest
     total_shares = sum(s.share_amount for s in share_balances)
     principal_paid = total_deployed - remaining_principal
-    balance_now = total_savings - principal_paid + total_shares - total_expenses
+    balance_now = total_savings - remaining_principal + total_shares - total_expenses
     return balance_now
 
 @login_required(login_url='loginpage')
@@ -272,6 +272,7 @@ def loan_add_individual(request, id):
             try:
                 balance_now=get_balance_now()
                 if Decimal(principal) > balance_now:
+                    print(balance_now)
                     messages.error(request, "You don't have enough balance to provide loan")
                     return redirect('loan_home')
                 # Check for active loan

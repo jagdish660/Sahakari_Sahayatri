@@ -24,6 +24,14 @@ Member Detail
                 <p><strong>Email:</strong> {{ member.email }}</p>
                 <p><strong>Citizenship No.:</strong> {{ member.citizenship_number }}</p>
             </div>
+            {% if  request.user.is_staff or request.user.is_superuser %}
+            <div class="row">
+                <div class="col-md-6"></div>
+                <div class="col-md-6">
+                    <a href="{% url 'customer_update' member.member_id %}" class="links text-decoration-none text-black"><img style="height:15px; width:15px;" src="{% static 'images/edit.png' %}"  alt="Edit"> Edit</a>
+                </div>
+            </div>
+        {% endif %}
         </div>
         {% if request.user.is_normaluser %}
         <div class="row">
@@ -35,7 +43,7 @@ Member Detail
             </div>
         </div>
         {% endif %}
-        <a href="" id="printbutton" class="btn btn-sm btn-warning">Print the page</a>
+        <!-- <a href="" id="printbutton" class="btn btn-sm btn-warning">Print the page</a> -->
     </div>
 
     <div class="m-3">
@@ -118,7 +126,6 @@ Member Detail
     <!-- Loan -->
     <div class="m-3">
         <h5>Loan</h5>
-        <a href="{% url 'loan_add_individual' member.member_id %}" class="btn btn-sm btn-primary">Add New Loan</a>
         {% if loan_transactions %}
             {% for loan in loan_transactions %}
                 {% if loan.status == "active" %}
@@ -158,6 +165,7 @@ Member Detail
                 <a href="{% url 'user_loan_all' member.member_id %}" class="btn btn-sm btn-primary">Click Here</a>
             </div>
         {% else %}
+        <a href="{% url 'loan_add_individual' member.member_id %}" class="btn btn-sm btn-primary">Add New Loan</a>
             <p>No loan transactions available.</p>
         {% endif %}
     </div><br>
